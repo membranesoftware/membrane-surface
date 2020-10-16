@@ -1,0 +1,7 @@
+WindowTitle Membrane Surface
+ShuttingDownApp Shutting down Membrane Surface
+Ok ok
+Yes yes
+No no
+Cancel cancel
+Remove remove
