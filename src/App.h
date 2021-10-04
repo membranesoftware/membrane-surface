@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -39,6 +39,7 @@
 #include "StdString.h"
 #include "Log.h"
 #include "Input.h"
+#include "TaskGroup.h"
 #include "Resource.h"
 #include "Network.h"
 #include "HashMap.h"
@@ -54,11 +55,10 @@ class App {
 public:
 	App ();
 	~App ();
-
 	static App *instance;
 
 	// Populate the App instance pointer with a newly created object
-	static void createInstance ();
+	static void createInstance (bool shouldSkipInit = false);
 
 	// Destroy and clear the App instance pointer
 	static void freeInstance ();
@@ -83,12 +83,14 @@ public:
 	Log log;
 	Prng prng;
 	Input input;
+	TaskGroup taskGroup;
 	UiStack uiStack;
 	UiText uiText;
 	UiConfiguration uiConfig;
 	Resource resource;
 	Network network;
 	SystemInterface systemInterface;
+	bool isConsole;
 	bool shouldRefreshUi;
 	bool isInterfaceAnimationEnabled;
 	float nextFontScale;
@@ -157,12 +159,15 @@ public:
 
 	typedef void (*RenderTaskFunction) (void *fnData);
 	struct RenderTaskContext {
-		RenderTaskFunction callback;
-		void *callbackData;
-		RenderTaskContext (): callback (NULL), callbackData (NULL) { }
+		RenderTaskFunction fn;
+		void *fnData;
+		RenderTaskContext (): fn (NULL), fnData (NULL) { }
 	};
 	// Schedule a task function to execute at the top of the next render loop
 	void addRenderTask (RenderTaskFunction fn, void *fnData);
+
+	// Append text to any previously set console window
+	void writeConsoleOutput (const StdString &text);
 
 	// Return a pseudorandom int value, chosen from within the specified inclusive range
 	int getRandomInt (int i1, int i2);
@@ -174,6 +179,15 @@ public:
 	static bool keyEvent (void *ptr, SDL_Keycode keycode, bool isShiftDown, bool isControlDown);
 
 private:
+	// Read environment settings and configure the app
+	void init ();
+
+	// Run the application in window mode
+	int runWindow ();
+
+	// Run the application in console mode
+	int runConsole ();
+
 	// Create the root panel and other top-level widgets
 	void populateWidgets ();
 
@@ -197,9 +211,6 @@ private:
 
 	// Run the application's state update thread
 	static int runUpdateThread (void *appPtr);
-
-	// Callback function for use with Network::addDatagramCallback
-	static void datagramReceived (void *callbackData, const char *messageData, int messageLength, const char *sourceAddress, int sourcePort);
 
 	// Write the prefs file if any prefsMap keys have changed since the last write
 	void writePrefs ();

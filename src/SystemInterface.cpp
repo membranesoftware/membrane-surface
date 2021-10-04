@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -31,129 +31,75 @@
 #include "Config.h"
 #include "SystemInterface.h"
 
-const char *SystemInterface::version = "22-stable-d349a662";
-const char *SystemInterface::Command_AgentConfiguration = "AgentConfiguration";
-const char *SystemInterface::Command_AgentContact = "AgentContact";
-const char *SystemInterface::Command_AgentStatus = "AgentStatus";
+const char *SystemInterface::version = "23-stable-c19b2321";
 const char *SystemInterface::Command_ClearCache = "ClearCache";
 const char *SystemInterface::Command_CommandResult = "CommandResult";
 const char *SystemInterface::Command_EndSet = "EndSet";
-const char *SystemInterface::Command_FindItems = "FindItems";
 const char *SystemInterface::Command_GetStatus = "GetStatus";
-const char *SystemInterface::Command_ReportContact = "ReportContact";
-const char *SystemInterface::Command_ReportStatus = "ReportStatus";
+const char *SystemInterface::Command_PlayAnimation = "PlayAnimation";
+const char *SystemInterface::Command_RemoveWindow = "RemoveWindow";
 const char *SystemInterface::Command_ShowColorFillBackground = "ShowColorFillBackground";
+const char *SystemInterface::Command_ShowCountdownWindow = "ShowCountdownWindow";
 const char *SystemInterface::Command_ShowFileImageBackground = "ShowFileImageBackground";
+const char *SystemInterface::Command_ShowIconLabelWindow = "ShowIconLabelWindow";
 const char *SystemInterface::Command_ShowResourceImageBackground = "ShowResourceImageBackground";
-const char *SystemInterface::Command_ShutdownAgent = "ShutdownAgent";
-const char *SystemInterface::Command_TaskItem = "TaskItem";
-const char *SystemInterface::Constant_CreateTimePrefixField = "a";
 const char *SystemInterface::Constant_AgentIdPrefixField = "b";
-const char *SystemInterface::Constant_UserIdPrefixField = "c";
-const char *SystemInterface::Constant_PriorityPrefixField = "d";
-const char *SystemInterface::Constant_StartTimePrefixField = "e";
-const char *SystemInterface::Constant_DurationPrefixField = "f";
+const char *SystemInterface::Constant_AuthorizationHashAlgorithm = "sha256";
 const char *SystemInterface::Constant_AuthorizationHashPrefixField = "g";
 const char *SystemInterface::Constant_AuthorizationTokenPrefixField = "h";
-const char *SystemInterface::Constant_AuthorizationHashAlgorithm = "sha256";
-const char *SystemInterface::Constant_WebSocketEvent = "SystemInterface";
-const char *SystemInterface::Constant_UrlQueryParameter = "c";
-const char *SystemInterface::Constant_DefaultInvokePath = "/";
-const char *SystemInterface::Constant_DefaultAuthorizePath = "C18HZb3wsXQoMQN6Laz8S5Lq";
-const char *SystemInterface::Constant_DefaultLinkPath = "mNODP0RPYCLhTiPGiCifPJA9";
-const char *SystemInterface::Constant_DisplayCondition = "a";
+const char *SystemInterface::Constant_CreateTimePrefixField = "a";
+const char *SystemInterface::Constant_DurationPrefixField = "f";
+const char *SystemInterface::Constant_PriorityPrefixField = "d";
+const char *SystemInterface::Constant_StartTimePrefixField = "e";
+const char *SystemInterface::Constant_UserIdPrefixField = "c";
 void SystemInterface::populate () {
-  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("AgentConfiguration"), SystemInterface::Command (45, StdString ("AgentConfiguration"), StdString ("AgentConfiguration"))));
-  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("AgentContact"), SystemInterface::Command (33, StdString ("AgentContact"), StdString ("AgentContact"))));
-  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("AgentStatus"), SystemInterface::Command (1, StdString ("AgentStatus"), StdString ("AgentStatus"))));
   commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ClearCache"), SystemInterface::Command (59, StdString ("ClearCache"), StdString ("EmptyObject"))));
   commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("CommandResult"), SystemInterface::Command (0, StdString ("CommandResult"), StdString ("CommandResult"))));
   commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("EndSet"), SystemInterface::Command (21, StdString ("EndSet"), StdString ("EmptyObject"))));
-  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("FindItems"), SystemInterface::Command (3, StdString ("FindItems"), StdString ("FindItems"))));
   commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("GetStatus"), SystemInterface::Command (8, StdString ("GetStatus"), StdString ("EmptyObject"))));
-  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ReportContact"), SystemInterface::Command (32, StdString ("ReportContact"), StdString ("ReportContact"))));
-  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ReportStatus"), SystemInterface::Command (2, StdString ("ReportStatus"), StdString ("ReportStatus"))));
+  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("PlayAnimation"), SystemInterface::Command (215, StdString ("PlayAnimation"), StdString ("PlayAnimation"))));
+  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("RemoveWindow"), SystemInterface::Command (217, StdString ("RemoveWindow"), StdString ("RemoveWindow"))));
   commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ShowColorFillBackground"), SystemInterface::Command (40, StdString ("ShowColorFillBackground"), StdString ("ShowColorFillBackground"))));
+  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ShowCountdownWindow"), SystemInterface::Command (219, StdString ("ShowCountdownWindow"), StdString ("ShowCountdownWindow"))));
   commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ShowFileImageBackground"), SystemInterface::Command (106, StdString ("ShowFileImageBackground"), StdString ("ShowFileImageBackground"))));
+  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ShowIconLabelWindow"), SystemInterface::Command (216, StdString ("ShowIconLabelWindow"), StdString ("ShowIconLabelWindow"))));
   commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ShowResourceImageBackground"), SystemInterface::Command (81, StdString ("ShowResourceImageBackground"), StdString ("ShowResourceImageBackground"))));
-  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ShutdownAgent"), SystemInterface::Command (43, StdString ("ShutdownAgent"), StdString ("EmptyObject"))));
-  commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("TaskItem"), SystemInterface::Command (26, StdString ("TaskItem"), StdString ("TaskItem"))));
-  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("AgentConfiguration"), SystemInterface::getParams_AgentConfiguration));
-  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("AgentContact"), SystemInterface::getParams_AgentContact));
-  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("AgentStatus"), SystemInterface::getParams_AgentStatus));
+  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("AnimationCommand"), SystemInterface::getParams_AnimationCommand));
   getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("CommandResult"), SystemInterface::getParams_CommandResult));
   getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("EmptyObject"), SystemInterface::getParams_EmptyObject));
-  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("FindItems"), SystemInterface::getParams_FindItems));
-  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("ReportContact"), SystemInterface::getParams_ReportContact));
-  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("ReportStatus"), SystemInterface::getParams_ReportStatus));
+  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("PlayAnimation"), SystemInterface::getParams_PlayAnimation));
+  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("RemoveWindow"), SystemInterface::getParams_RemoveWindow));
   getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("ShowColorFillBackground"), SystemInterface::getParams_ShowColorFillBackground));
+  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("ShowCountdownWindow"), SystemInterface::getParams_ShowCountdownWindow));
   getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("ShowFileImageBackground"), SystemInterface::getParams_ShowFileImageBackground));
+  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("ShowIconLabelWindow"), SystemInterface::getParams_ShowIconLabelWindow));
   getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("ShowResourceImageBackground"), SystemInterface::getParams_ShowResourceImageBackground));
-  getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("TaskItem"), SystemInterface::getParams_TaskItem));
-  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("AgentConfiguration"), SystemInterface::populateDefaultFields_AgentConfiguration));
-  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("AgentContact"), SystemInterface::populateDefaultFields_AgentContact));
-  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("AgentStatus"), SystemInterface::populateDefaultFields_AgentStatus));
+  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("AnimationCommand"), SystemInterface::populateDefaultFields_AnimationCommand));
   populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("CommandResult"), SystemInterface::populateDefaultFields_CommandResult));
   populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("EmptyObject"), SystemInterface::populateDefaultFields_EmptyObject));
-  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("FindItems"), SystemInterface::populateDefaultFields_FindItems));
-  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("ReportContact"), SystemInterface::populateDefaultFields_ReportContact));
-  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("ReportStatus"), SystemInterface::populateDefaultFields_ReportStatus));
+  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("PlayAnimation"), SystemInterface::populateDefaultFields_PlayAnimation));
+  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("RemoveWindow"), SystemInterface::populateDefaultFields_RemoveWindow));
   populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("ShowColorFillBackground"), SystemInterface::populateDefaultFields_ShowColorFillBackground));
+  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("ShowCountdownWindow"), SystemInterface::populateDefaultFields_ShowCountdownWindow));
   populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("ShowFileImageBackground"), SystemInterface::populateDefaultFields_ShowFileImageBackground));
+  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("ShowIconLabelWindow"), SystemInterface::populateDefaultFields_ShowIconLabelWindow));
   populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("ShowResourceImageBackground"), SystemInterface::populateDefaultFields_ShowResourceImageBackground));
-  populateDefaultFieldsMap.insert (std::pair<StdString, SystemInterface::PopulateDefaultFieldsFunction> (StdString ("TaskItem"), SystemInterface::populateDefaultFields_TaskItem));
-  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("AgentConfiguration"), SystemInterface::hashFields_AgentConfiguration));
-  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("AgentContact"), SystemInterface::hashFields_AgentContact));
-  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("AgentStatus"), SystemInterface::hashFields_AgentStatus));
+  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("AnimationCommand"), SystemInterface::hashFields_AnimationCommand));
   hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("CommandResult"), SystemInterface::hashFields_CommandResult));
   hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("EmptyObject"), SystemInterface::hashFields_EmptyObject));
-  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("FindItems"), SystemInterface::hashFields_FindItems));
-  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("ReportContact"), SystemInterface::hashFields_ReportContact));
-  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("ReportStatus"), SystemInterface::hashFields_ReportStatus));
+  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("PlayAnimation"), SystemInterface::hashFields_PlayAnimation));
+  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("RemoveWindow"), SystemInterface::hashFields_RemoveWindow));
   hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("ShowColorFillBackground"), SystemInterface::hashFields_ShowColorFillBackground));
+  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("ShowCountdownWindow"), SystemInterface::hashFields_ShowCountdownWindow));
   hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("ShowFileImageBackground"), SystemInterface::hashFields_ShowFileImageBackground));
+  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("ShowIconLabelWindow"), SystemInterface::hashFields_ShowIconLabelWindow));
   hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("ShowResourceImageBackground"), SystemInterface::hashFields_ShowResourceImageBackground));
-  hashFieldsMap.insert (std::pair<StdString, SystemInterface::HashFieldsFunction> (StdString ("TaskItem"), SystemInterface::hashFields_TaskItem));
 }
 
-void SystemInterface::getParams_AgentConfiguration (std::list<SystemInterface::Param> *destList) {
+void SystemInterface::getParams_AnimationCommand (std::list<SystemInterface::Param> *destList) {
   destList->clear ();
-  destList->push_back (SystemInterface::Param (StdString ("isEnabled"), StdString ("boolean"), StdString (""), 0));
-  destList->push_back (SystemInterface::Param (StdString ("displayName"), StdString ("string"), StdString (""), 3));
-}
-
-void SystemInterface::getParams_AgentContact (std::list<SystemInterface::Param> *destList) {
-  destList->clear ();
-  destList->push_back (SystemInterface::Param (StdString ("id"), StdString ("string"), StdString (""), 35));
-  destList->push_back (SystemInterface::Param (StdString ("urlHostname"), StdString ("string"), StdString (""), 5));
-  destList->push_back (SystemInterface::Param (StdString ("tcpPort1"), StdString ("number"), 129, (double) 0, (double) 65535));
-  destList->push_back (SystemInterface::Param (StdString ("tcpPort2"), StdString ("number"), 129, (double) 0, (double) 65535));
-  destList->push_back (SystemInterface::Param (StdString ("udpPort"), StdString ("number"), 129, (double) 0, (double) 65535));
-  destList->push_back (SystemInterface::Param (StdString ("version"), StdString ("string"), StdString (""), 3));
-  destList->push_back (SystemInterface::Param (StdString ("nodeVersion"), StdString ("string"), StdString (""), 0));
-}
-
-void SystemInterface::getParams_AgentStatus (std::list<SystemInterface::Param> *destList) {
-  destList->clear ();
-  destList->push_back (SystemInterface::Param (StdString ("id"), StdString ("string"), StdString (""), 35));
-  destList->push_back (SystemInterface::Param (StdString ("displayName"), StdString ("string"), StdString (""), 3));
-  destList->push_back (SystemInterface::Param (StdString ("applicationName"), StdString ("string"), StdString (""), 3));
-  destList->push_back (SystemInterface::Param (StdString ("urlHostname"), StdString ("string"), StdString (""), 5));
-  destList->push_back (SystemInterface::Param (StdString ("tcpPort1"), StdString ("number"), 129, (double) 0, (double) 65535));
-  destList->push_back (SystemInterface::Param (StdString ("tcpPort2"), StdString ("number"), 129, (double) 0, (double) 65535));
-  destList->push_back (SystemInterface::Param (StdString ("udpPort"), StdString ("number"), 129, (double) 0, (double) 65535));
-  destList->push_back (SystemInterface::Param (StdString ("linkPath"), StdString ("string"), StdString (""), 1));
-  destList->push_back (SystemInterface::Param (StdString ("uptime"), StdString ("string"), StdString (""), 1));
-  destList->push_back (SystemInterface::Param (StdString ("version"), StdString ("string"), StdString (""), 3));
-  destList->push_back (SystemInterface::Param (StdString ("nodeVersion"), StdString ("string"), StdString (""), 0));
-  destList->push_back (SystemInterface::Param (StdString ("platform"), StdString ("string"), StdString (""), 0));
-  destList->push_back (SystemInterface::Param (StdString ("isEnabled"), StdString ("boolean"), StdString (""), 1));
-  destList->push_back (SystemInterface::Param (StdString ("taskCount"), StdString ("number"), StdString (""), 17));
-  destList->push_back (SystemInterface::Param (StdString ("runTaskName"), StdString ("string"), StdString (""), 0));
-  destList->push_back (SystemInterface::Param (StdString ("runTaskSubtitle"), StdString ("string"), StdString (""), 0));
-  destList->push_back (SystemInterface::Param (StdString ("runTaskPercentComplete"), StdString ("number"), 128, (double) 0, (double) 100));
-  destList->push_back (SystemInterface::Param (StdString ("runCount"), StdString ("number"), StdString (""), 17));
-  destList->push_back (SystemInterface::Param (StdString ("maxRunCount"), StdString ("number"), StdString (""), 17));
+  destList->push_back (SystemInterface::Param (StdString ("executeTime"), StdString ("number"), StdString (""), 17));
+  destList->push_back (SystemInterface::Param (StdString ("command"), StdString ("object"), StdString (""), 257));
 }
 
 void SystemInterface::getParams_CommandResult (std::list<SystemInterface::Param> *destList) {
@@ -163,30 +109,21 @@ void SystemInterface::getParams_CommandResult (std::list<SystemInterface::Param>
   destList->push_back (SystemInterface::Param (StdString ("itemId"), StdString ("string"), StdString (""), 32));
   destList->push_back (SystemInterface::Param (StdString ("item"), StdString ("object"), StdString (""), 256));
   destList->push_back (SystemInterface::Param (StdString ("taskId"), StdString ("string"), StdString (""), 32));
+  destList->push_back (SystemInterface::Param (StdString ("stringResult"), StdString ("string"), StdString (""), 0));
 }
 
 void SystemInterface::getParams_EmptyObject (std::list<SystemInterface::Param> *destList) {
   destList->clear ();
 }
 
-void SystemInterface::getParams_FindItems (std::list<SystemInterface::Param> *destList) {
+void SystemInterface::getParams_PlayAnimation (std::list<SystemInterface::Param> *destList) {
   destList->clear ();
-  destList->push_back (SystemInterface::Param (StdString ("searchKey"), StdString ("string"), StdString (""), 1));
-  destList->push_back (SystemInterface::Param (StdString ("resultOffset"), StdString ("number"), StdString (""), 17));
-  destList->push_back (SystemInterface::Param (StdString ("maxResults"), StdString ("number"), StdString (""), 17));
-  destList->push_back (SystemInterface::Param (StdString ("sortOrder"), StdString ("number"), StdString (""), 17));
+  destList->push_back (SystemInterface::Param (StdString ("commands"), StdString ("array"), StdString ("AnimationCommand"), 1));
 }
 
-void SystemInterface::getParams_ReportContact (std::list<SystemInterface::Param> *destList) {
+void SystemInterface::getParams_RemoveWindow (std::list<SystemInterface::Param> *destList) {
   destList->clear ();
-  destList->push_back (SystemInterface::Param (StdString ("destination"), StdString ("string"), StdString (""), 65));
-  destList->push_back (SystemInterface::Param (StdString ("reportCommandType"), StdString ("number"), StdString (""), 1));
-}
-
-void SystemInterface::getParams_ReportStatus (std::list<SystemInterface::Param> *destList) {
-  destList->clear ();
-  destList->push_back (SystemInterface::Param (StdString ("destination"), StdString ("string"), StdString (""), 65));
-  destList->push_back (SystemInterface::Param (StdString ("reportCommandType"), StdString ("number"), StdString (""), 1));
+  destList->push_back (SystemInterface::Param (StdString ("windowId"), StdString ("string"), StdString (""), 3));
 }
 
 void SystemInterface::getParams_ShowColorFillBackground (std::list<SystemInterface::Param> *destList) {
@@ -196,9 +133,29 @@ void SystemInterface::getParams_ShowColorFillBackground (std::list<SystemInterfa
   destList->push_back (SystemInterface::Param (StdString ("fillColorB"), StdString ("number"), 129, (double) 0, (double) 255));
 }
 
+void SystemInterface::getParams_ShowCountdownWindow (std::list<SystemInterface::Param> *destList) {
+  destList->clear ();
+  destList->push_back (SystemInterface::Param (StdString ("windowId"), StdString ("string"), StdString (""), 1));
+  destList->push_back (SystemInterface::Param (StdString ("icon"), StdString ("number"), StdString (""), 1));
+  destList->push_back (SystemInterface::Param (StdString ("positionX"), StdString ("number"), StdString (""), 1));
+  destList->push_back (SystemInterface::Param (StdString ("positionY"), StdString ("number"), StdString (""), 1));
+  destList->push_back (SystemInterface::Param (StdString ("labelText"), StdString ("string"), StdString (""), 3));
+  destList->push_back (SystemInterface::Param (StdString ("countdownTime"), StdString ("number"), StdString (""), 1));
+}
+
 void SystemInterface::getParams_ShowFileImageBackground (std::list<SystemInterface::Param> *destList) {
   destList->clear ();
   destList->push_back (SystemInterface::Param (StdString ("imagePath"), StdString ("string"), StdString (""), 3));
+  destList->push_back (SystemInterface::Param (StdString ("background"), StdString ("number"), StdString (""), 1));
+}
+
+void SystemInterface::getParams_ShowIconLabelWindow (std::list<SystemInterface::Param> *destList) {
+  destList->clear ();
+  destList->push_back (SystemInterface::Param (StdString ("windowId"), StdString ("string"), StdString (""), 1));
+  destList->push_back (SystemInterface::Param (StdString ("icon"), StdString ("number"), StdString (""), 1));
+  destList->push_back (SystemInterface::Param (StdString ("positionX"), StdString ("number"), StdString (""), 1));
+  destList->push_back (SystemInterface::Param (StdString ("positionY"), StdString ("number"), StdString (""), 1));
+  destList->push_back (SystemInterface::Param (StdString ("labelText"), StdString ("string"), StdString (""), 3));
 }
 
 void SystemInterface::getParams_ShowResourceImageBackground (std::list<SystemInterface::Param> *destList) {
@@ -206,38 +163,9 @@ void SystemInterface::getParams_ShowResourceImageBackground (std::list<SystemInt
   destList->push_back (SystemInterface::Param (StdString ("imagePath"), StdString ("string"), StdString (""), 3));
 }
 
-void SystemInterface::getParams_TaskItem (std::list<SystemInterface::Param> *destList) {
-  destList->clear ();
-  destList->push_back (SystemInterface::Param (StdString ("id"), StdString ("string"), StdString (""), 33));
-  destList->push_back (SystemInterface::Param (StdString ("name"), StdString ("string"), StdString (""), 3));
-  destList->push_back (SystemInterface::Param (StdString ("subtitle"), StdString ("string"), StdString (""), 1));
-  destList->push_back (SystemInterface::Param (StdString ("isRunning"), StdString ("boolean"), StdString (""), 1));
-  destList->push_back (SystemInterface::Param (StdString ("percentComplete"), StdString ("number"), 129, (double) 0, (double) 100));
-  destList->push_back (SystemInterface::Param (StdString ("createTime"), StdString ("number"), StdString (""), 9));
-  destList->push_back (SystemInterface::Param (StdString ("endTime"), StdString ("number"), StdString (""), 17));
-}
-
-void SystemInterface::populateDefaultFields_AgentConfiguration (Json *destObject) {
-}
-
-void SystemInterface::populateDefaultFields_AgentContact (Json *destObject) {
-  if (! destObject->exists ("nodeVersion")) {
-    destObject->set ("nodeVersion", "");
-  }
-}
-
-void SystemInterface::populateDefaultFields_AgentStatus (Json *destObject) {
-  if (! destObject->exists ("linkPath")) {
-    destObject->set ("linkPath", "");
-  }
-  if (! destObject->exists ("uptime")) {
-    destObject->set ("uptime", "");
-  }
-  if (! destObject->exists ("nodeVersion")) {
-    destObject->set ("nodeVersion", "");
-  }
-  if (! destObject->exists ("platform")) {
-    destObject->set ("platform", "");
+void SystemInterface::populateDefaultFields_AnimationCommand (Json *destObject) {
+  if (! destObject->exists ("executeTime")) {
+    destObject->set ("executeTime", 0);
   }
 }
 
@@ -247,166 +175,50 @@ void SystemInterface::populateDefaultFields_CommandResult (Json *destObject) {
 void SystemInterface::populateDefaultFields_EmptyObject (Json *destObject) {
 }
 
-void SystemInterface::populateDefaultFields_FindItems (Json *destObject) {
-  if (! destObject->exists ("searchKey")) {
-    destObject->set ("searchKey", "*");
-  }
-  if (! destObject->exists ("resultOffset")) {
-    destObject->set ("resultOffset", 0);
-  }
-  if (! destObject->exists ("maxResults")) {
-    destObject->set ("maxResults", 0);
-  }
-  if (! destObject->exists ("sortOrder")) {
-    destObject->set ("sortOrder", 0);
-  }
+void SystemInterface::populateDefaultFields_PlayAnimation (Json *destObject) {
 }
 
-void SystemInterface::populateDefaultFields_ReportContact (Json *destObject) {
-  if (! destObject->exists ("reportCommandType")) {
-    destObject->set ("reportCommandType", 0);
-  }
-}
-
-void SystemInterface::populateDefaultFields_ReportStatus (Json *destObject) {
-  if (! destObject->exists ("reportCommandType")) {
-    destObject->set ("reportCommandType", 0);
-  }
+void SystemInterface::populateDefaultFields_RemoveWindow (Json *destObject) {
 }
 
 void SystemInterface::populateDefaultFields_ShowColorFillBackground (Json *destObject) {
 }
 
+void SystemInterface::populateDefaultFields_ShowCountdownWindow (Json *destObject) {
+  if (! destObject->exists ("windowId")) {
+    destObject->set ("windowId", "");
+  }
+  if (! destObject->exists ("icon")) {
+    destObject->set ("icon", 0);
+  }
+  if (! destObject->exists ("countdownTime")) {
+    destObject->set ("countdownTime", 20000);
+  }
+}
+
 void SystemInterface::populateDefaultFields_ShowFileImageBackground (Json *destObject) {
+  if (! destObject->exists ("background")) {
+    destObject->set ("background", 0);
+  }
+}
+
+void SystemInterface::populateDefaultFields_ShowIconLabelWindow (Json *destObject) {
+  if (! destObject->exists ("windowId")) {
+    destObject->set ("windowId", "");
+  }
+  if (! destObject->exists ("icon")) {
+    destObject->set ("icon", 0);
+  }
 }
 
 void SystemInterface::populateDefaultFields_ShowResourceImageBackground (Json *destObject) {
 }
 
-void SystemInterface::populateDefaultFields_TaskItem (Json *destObject) {
-  if (! destObject->exists ("subtitle")) {
-    destObject->set ("subtitle", "");
-  }
-  if (! destObject->exists ("percentComplete")) {
-    destObject->set ("percentComplete", 0);
-  }
-}
-
-void SystemInterface::hashFields_AgentConfiguration (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
+void SystemInterface::hashFields_AnimationCommand (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
   StdString s;
 
-  s = commandParams->getString ("displayName", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  if (commandParams->exists ("isEnabled")) {
-    s.sprintf ("%s", commandParams->getBoolean ("isEnabled", false) ? "true" : "false");
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-}
-
-void SystemInterface::hashFields_AgentContact (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
-  StdString s;
-
-  s = commandParams->getString ("id", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  if (commandParams->exists ("nodeVersion")) {
-    s = commandParams->getString ("nodeVersion", "");
-    if (! s.empty ()) {
-      hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-    }
-  }
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("tcpPort1", (int64_t) 0));
+  s.sprintf ("%lli", (long long int) commandParams->getNumber ("executeTime", (int64_t) 0));
   hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("tcpPort2", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("udpPort", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s = commandParams->getString ("urlHostname", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  s = commandParams->getString ("version", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-}
-
-void SystemInterface::hashFields_AgentStatus (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
-  StdString s;
-
-  s = commandParams->getString ("applicationName", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  s = commandParams->getString ("displayName", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  s = commandParams->getString ("id", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  s.sprintf ("%s", commandParams->getBoolean ("isEnabled", false) ? "true" : "false");
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s = commandParams->getString ("linkPath", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("maxRunCount", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  if (commandParams->exists ("nodeVersion")) {
-    s = commandParams->getString ("nodeVersion", "");
-    if (! s.empty ()) {
-      hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-    }
-  }
-  if (commandParams->exists ("platform")) {
-    s = commandParams->getString ("platform", "");
-    if (! s.empty ()) {
-      hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-    }
-  }
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("runCount", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  if (commandParams->exists ("runTaskName")) {
-    s = commandParams->getString ("runTaskName", "");
-    if (! s.empty ()) {
-      hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-    }
-  }
-  if (commandParams->exists ("runTaskPercentComplete")) {
-    s.sprintf ("%lli", (long long int) commandParams->getNumber ("runTaskPercentComplete", (int64_t) 0));
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  if (commandParams->exists ("runTaskSubtitle")) {
-    s = commandParams->getString ("runTaskSubtitle", "");
-    if (! s.empty ()) {
-      hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-    }
-  }
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("taskCount", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("tcpPort1", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("tcpPort2", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("udpPort", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s = commandParams->getString ("uptime", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  s = commandParams->getString ("urlHostname", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  s = commandParams->getString ("version", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
 }
 
 void SystemInterface::hashFields_CommandResult (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
@@ -420,6 +232,12 @@ void SystemInterface::hashFields_CommandResult (Json *commandParams, SystemInter
   }
   if (commandParams->exists ("itemId")) {
     s = commandParams->getString ("itemId", "");
+    if (! s.empty ()) {
+      hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+    }
+  }
+  if (commandParams->exists ("stringResult")) {
+    s = commandParams->getString ("stringResult", "");
     if (! s.empty ()) {
       hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
     }
@@ -438,41 +256,25 @@ void SystemInterface::hashFields_EmptyObject (Json *commandParams, SystemInterfa
 
 }
 
-void SystemInterface::hashFields_FindItems (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
-  StdString s;
+void SystemInterface::hashFields_PlayAnimation (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
+  Json obj;
+  int i, len;
 
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("maxResults", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("resultOffset", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s = commandParams->getString ("searchKey", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  len = commandParams->getArrayLength ("commands");
+  for (i = 0; i < len; ++i) {
+    if (commandParams->getArrayObject ("commands", i, &obj)) {
+      SystemInterface::hashFields_AnimationCommand (&obj, hashUpdateFn, hashContextPtr);
+    }
   }
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("sortOrder", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
 }
 
-void SystemInterface::hashFields_ReportContact (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
+void SystemInterface::hashFields_RemoveWindow (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
   StdString s;
 
-  s = commandParams->getString ("destination", "");
+  s = commandParams->getString ("windowId", "");
   if (! s.empty ()) {
     hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
   }
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("reportCommandType", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-}
-
-void SystemInterface::hashFields_ReportStatus (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
-  StdString s;
-
-  s = commandParams->getString ("destination", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("reportCommandType", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
 }
 
 void SystemInterface::hashFields_ShowColorFillBackground (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
@@ -486,10 +288,52 @@ void SystemInterface::hashFields_ShowColorFillBackground (Json *commandParams, S
   hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
 }
 
+void SystemInterface::hashFields_ShowCountdownWindow (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
+  StdString s;
+
+  s.sprintf ("%lli", (long long int) commandParams->getNumber ("countdownTime", (int64_t) 0));
+  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  s.sprintf ("%lli", (long long int) commandParams->getNumber ("icon", (int64_t) 0));
+  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  s = commandParams->getString ("labelText", "");
+  if (! s.empty ()) {
+    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  }
+  s.sprintf ("%lli", (long long int) commandParams->getNumber ("positionX", (int64_t) 0));
+  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  s.sprintf ("%lli", (long long int) commandParams->getNumber ("positionY", (int64_t) 0));
+  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  s = commandParams->getString ("windowId", "");
+  if (! s.empty ()) {
+    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  }
+}
+
 void SystemInterface::hashFields_ShowFileImageBackground (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
   StdString s;
 
+  s.sprintf ("%lli", (long long int) commandParams->getNumber ("background", (int64_t) 0));
+  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
   s = commandParams->getString ("imagePath", "");
+  if (! s.empty ()) {
+    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  }
+}
+
+void SystemInterface::hashFields_ShowIconLabelWindow (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
+  StdString s;
+
+  s.sprintf ("%lli", (long long int) commandParams->getNumber ("icon", (int64_t) 0));
+  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  s = commandParams->getString ("labelText", "");
+  if (! s.empty ()) {
+    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  }
+  s.sprintf ("%lli", (long long int) commandParams->getNumber ("positionX", (int64_t) 0));
+  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  s.sprintf ("%lli", (long long int) commandParams->getNumber ("positionY", (int64_t) 0));
+  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
+  s = commandParams->getString ("windowId", "");
   if (! s.empty ()) {
     hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
   }
@@ -503,31 +347,8 @@ void SystemInterface::hashFields_ShowResourceImageBackground (Json *commandParam
     hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
   }
 }
+SystemInterface *SystemInterface::instance = NULL;
 
-void SystemInterface::hashFields_TaskItem (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr) {
-  StdString s;
-
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("createTime", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("endTime", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s = commandParams->getString ("id", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  s.sprintf ("%s", commandParams->getBoolean ("isRunning", false) ? "true" : "false");
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s = commandParams->getString ("name", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-  s.sprintf ("%lli", (long long int) commandParams->getNumber ("percentComplete", (int64_t) 0));
-  hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  s = commandParams->getString ("subtitle", "");
-  if (! s.empty ()) {
-    hashUpdateFn (hashContextPtr, (unsigned char *) s.c_str (), s.length ());
-  }
-}
 SystemInterface::SystemInterface ()
 : lastError ("")
 {
@@ -538,7 +359,7 @@ SystemInterface::~SystemInterface () {
 
 }
 
-Json *SystemInterface::createCommand (const SystemInterface::Prefix &prefix, const char *commandName, int commandType, Json *commandParams) {
+Json *SystemInterface::createCommand (const SystemInterface::Prefix &prefix, const char *commandName, Json *commandParams) {
 	Json *cmd, *cmdprefix;
 	SystemInterface::Command command;
 
@@ -560,7 +381,6 @@ Json *SystemInterface::createCommand (const SystemInterface::Prefix &prefix, con
 	cmd = new Json ();
 	cmd->set ("command", command.id);
 	cmd->set ("commandName", commandName);
-	cmd->set ("commandType", commandType);
 
 	cmdprefix = new Json ();
 	if (prefix.createTime > 0) {
@@ -881,68 +701,12 @@ StdString SystemInterface::getCommandAgentId (Json *command) {
 	return (prefix.getString (SystemInterface::Constant_AgentIdPrefixField, ""));
 }
 
-StdString SystemInterface::getCommandAgentName (Json *command) {
-	StdString name;
-
-	if (getCommandId (command) != SystemInterface::CommandId_AgentStatus) {
-		return (StdString (""));
-	}
-
-	name = getCommandStringParam (command, "displayName", "");
-	if (! name.empty ()) {
-		return (name);
-	}
-
-	name = getCommandStringParam (command, "urlHostname", "");
-	if (! name.empty ()) {
-		return (name);
-	}
-
-	name = getCommandAgentId (command);
-	if (! name.empty ()) {
-		return (name);
-	}
-
-	return (StdString (""));
-}
-
-StdString SystemInterface::getCommandAgentAddress (Json *command) {
-	StdString hostname;
-	int port;
-
-	if (getCommandId (command) != SystemInterface::CommandId_AgentStatus) {
-		return (StdString (""));
-	}
-
-	hostname = getCommandStringParam (command, "urlHostname", "");
-	if (hostname.empty ()) {
-		return (StdString (""));
-	}
-
-	port = getCommandNumberParam (command, "tcpPort1", SystemInterface::Constant_DefaultTcpPort1);
-	if ((port < 0) || (port > 65535)) {
-		return (StdString (""));
-	}
-
-	return (StdString::createSprintf ("%s:%i", hostname.c_str (), port));
-}
-
 StdString SystemInterface::getCommandRecordId (Json *command) {
 	return (getCommandStringParam (command, "id", ""));
 }
 
-bool SystemInterface::isRecordClosed (Json *command) {
-	Json prefix;
-
-	if (! command->getObject ("prefix", &prefix)) {
-		return (false);
-	}
-
-	return (prefix.getBoolean ("isRecordClosed", false));
-}
-
 bool SystemInterface::isWindowsPlatform (const StdString &platform) {
-	return (platform.equals ("win32") || platform.equals ("win64"));
+	return (platform.startsWith ("windows") || platform.equals ("win32") || platform.equals ("win64"));
 }
 
 SystemInterface::Prefix SystemInterface::getCommandPrefix (Json *command) {

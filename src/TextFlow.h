@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -27,47 +27,58 @@
 * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
 */
-// Widget that holds a set of text and maintains line flow
+// Widget that holds text as a set of labels and maintains line flow
 
-#ifndef TEXT_AREA_H
-#define TEXT_AREA_H
+#ifndef TEXT_FLOW_H
+#define TEXT_FLOW_H
 
 #include <list>
+#include "UiConfiguration.h"
 #include "Label.h"
-#include "Font.h"
 #include "Color.h"
 #include "Panel.h"
 
-class TextArea : public Panel {
+class TextFlow : public Panel {
 public:
-	// maxTextLineLength specifies the maximum number of characters per text line, with a value of zero or less indicating that a default line length should be chosen from UiConfiguration. maxTextLineWidth specifies the maximum width in pixels per text line, with a value of zero or less indicating that no such maximum should apply.
-	TextArea (int fontType, const Color &textColor = Color (0.0f, 0.0f, 0.0f), int maxTextLineLength = 0, float maxTextLineWidth = 0.0f);
-	~TextArea ();
+	TextFlow (float viewWidth, UiConfiguration::FontType fontType = UiConfiguration::BodyFont);
+	~TextFlow ();
 
-	// Clear the text area's content
-	void clear ();
+	// Read-write data members
+	int maxLineCount;
 
-	// Set the maximum draw width that should be used for each line of text
-	void setMaxLineWidth (float maxTextLineWidth);
+	// Read-only data members
+	float viewWidth;
+	int lineCount;
+	StdString text;
+	UiConfiguration::FontType textFontType;
+	Font *textFont;
+	StdString textFontName;
+	int textFontSize;
+	Color textColor;
 
-	// Set the color that should be used to draw text
+	// Set the text flow's width
+	void setViewWidth (float targetWidth);
+
+	// Set the text flow's font
+	void setFont (UiConfiguration::FontType fontType);
+
+	// Set the text flow's text color
 	void setTextColor (const Color &color);
 
-	// Set the text area's content
-	void setText (const StdString &text);
+	// Set the text flow's content, changing its active font if fontType is provided
+	void setText (const StdString &textContent, UiConfiguration::FontType fontType = UiConfiguration::NoFont, bool forceFontReload = false);
 
-	// Set the amount of size padding that should be applied to the text area
-	void setPadding (float widthPaddingSize, float heightPaddingSize);
+	// Append new lines to the text flow's content
+	void appendText (const StdString &textContent);
 
 protected:
 	// Reset the panel's widget layout as appropriate for its content and configuration
 	virtual void refreshLayout ();
 
 private:
-	int textFontType;
-	Color textColor;
-	int maxLineLength;
-	float maxLineWidth;
+	// Create labels from linesText and add them to lineList
+	void addLines (const StdString &linesText);
+
 	std::list<Label *> lineList;
 };
 

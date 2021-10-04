@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -40,13 +40,34 @@
 
 class UiTextString {
 public:
-	static const int WindowTitle = 1;
-	static const int ShuttingDownApp = 2;
-	static const int Ok = 3;
-	static const int Yes = 4;
-	static const int No = 5;
-	static const int Cancel = 6;
-	static const int Remove = 7;
+	static const int ConsoleStartText1 = 1;
+	static const int ConsoleStartText2 = 2;
+	static const int ConsoleStartText3 = 3;
+	static const int ConsoleStartText4 = 4;
+	static const int LuaScriptHelpHelpText = 5;
+	static const int LuaScriptQuitHelpText = 6;
+	static const int LuaScriptPrintHelpText = 7;
+	static const int LuaScriptDofileHelpText = 8;
+	static const int LuaScriptSleepHelpText = 9;
+	static const int LuaSyntaxErrorText = 10;
+	static const int LuaParseErrorText = 11;
+	static const int LuaScriptExecutionErrorText = 12;
+	static const int EnvironmentVariables = 13;
+	static const int LuaScriptRunScriptHelpText = 14;
+	static const int LuaScriptMissingFunctionArgumentErrorText = 15;
+	static const int LuaScriptEmptyStringArgumentErrorText = 16;
+	static const int LuaScriptLoadScriptErrorText = 17;
+	static const int LuaScriptLoadScriptFileErrorText = 18;
+	static const int LuaScriptLoadScriptSyntaxErrorText = 19;
+	static const int LuaScriptLoadScriptExecutionErrorText = 20;
+	static const int Ok = 21;
+	static const int Yes = 22;
+	static const int No = 23;
+	static const int ShuttingDown = 24;
+	static const int Confirm = 25;
+	static const int Cancel = 26;
+	static const int Remove = 27;
+	static const int Console = 28;
 };
 
 #endif

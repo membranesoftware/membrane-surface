@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -40,36 +40,28 @@
 class SystemInterface {
 public:
   static const char *version;
-  static const char *Command_AgentConfiguration;
-  static const char *Command_AgentContact;
-  static const char *Command_AgentStatus;
   static const char *Command_ClearCache;
   static const char *Command_CommandResult;
   static const char *Command_EndSet;
-  static const char *Command_FindItems;
   static const char *Command_GetStatus;
-  static const char *Command_ReportContact;
-  static const char *Command_ReportStatus;
+  static const char *Command_PlayAnimation;
+  static const char *Command_RemoveWindow;
   static const char *Command_ShowColorFillBackground;
+  static const char *Command_ShowCountdownWindow;
   static const char *Command_ShowFileImageBackground;
+  static const char *Command_ShowIconLabelWindow;
   static const char *Command_ShowResourceImageBackground;
-  static const char *Command_ShutdownAgent;
-  static const char *Command_TaskItem;
-  static const int CommandId_AgentConfiguration = 45;
-  static const int CommandId_AgentContact = 33;
-  static const int CommandId_AgentStatus = 1;
   static const int CommandId_ClearCache = 59;
   static const int CommandId_CommandResult = 0;
   static const int CommandId_EndSet = 21;
-  static const int CommandId_FindItems = 3;
   static const int CommandId_GetStatus = 8;
-  static const int CommandId_ReportContact = 32;
-  static const int CommandId_ReportStatus = 2;
+  static const int CommandId_PlayAnimation = 215;
+  static const int CommandId_RemoveWindow = 217;
   static const int CommandId_ShowColorFillBackground = 40;
+  static const int CommandId_ShowCountdownWindow = 219;
   static const int CommandId_ShowFileImageBackground = 106;
+  static const int CommandId_ShowIconLabelWindow = 216;
   static const int CommandId_ShowResourceImageBackground = 81;
-  static const int CommandId_ShutdownAgent = 43;
-  static const int CommandId_TaskItem = 26;
   static const int ParamFlag_Required = 1;
   static const int ParamFlag_NotEmpty = 2;
   static const int ParamFlag_Hostname = 4;
@@ -80,57 +72,29 @@ public:
   static const int ParamFlag_RangedNumber = 128;
   static const int ParamFlag_Command = 256;
   static const int ParamFlag_EnumValue = 512;
-  static const int Constant_MaxCommandPriority = 100;
-  static const char *Constant_CreateTimePrefixField;
   static const char *Constant_AgentIdPrefixField;
-  static const char *Constant_UserIdPrefixField;
-  static const char *Constant_PriorityPrefixField;
-  static const char *Constant_StartTimePrefixField;
-  static const char *Constant_DurationPrefixField;
+  static const char *Constant_AuthorizationHashAlgorithm;
   static const char *Constant_AuthorizationHashPrefixField;
   static const char *Constant_AuthorizationTokenPrefixField;
-  static const char *Constant_AuthorizationHashAlgorithm;
-  static const char *Constant_WebSocketEvent;
-  static const char *Constant_UrlQueryParameter;
-  static const int Constant_DefaultTcpPort1 = 63738;
-  static const int Constant_DefaultTcpPort2 = 63739;
-  static const int Constant_DefaultUdpPort = 63738;
-  static const char *Constant_DefaultInvokePath;
-  static const char *Constant_DefaultAuthorizePath;
-  static const char *Constant_DefaultLinkPath;
-  static const int Constant_DefaultCommandType = 0;
-  static const int Constant_Stream = 1;
-  static const int Constant_Media = 2;
-  static const int Constant_Monitor = 3;
-  static const int Constant_Event = 4;
-  static const int Constant_Master = 5;
-  static const int Constant_Admin = 6;
-  static const int Constant_Camera = 7;
-  static const int Constant_CommandTypeCount = 8;
-  static const int Constant_DefaultDisplayState = 0;
-  static const int Constant_ShowUrlDisplayState = 1;
-  static const int Constant_PlayMediaDisplayState = 2;
-  static const int Constant_ShowImageDisplayState = 3;
-  static const int Constant_PlayCameraStreamDisplayState = 4;
+  static const int Constant_CenterBackground = 2;
+  static const int Constant_CountdownIcon = 2;
+  static const char *Constant_CreateTimePrefixField;
   static const int Constant_DefaultSortOrder = 0;
+  static const char *Constant_DurationPrefixField;
+  static const int Constant_ErrorIcon = 1;
+  static const int Constant_InfoIcon = 0;
+  static const int Constant_MaxCommandPriority = 100;
   static const int Constant_NameSort = 0;
   static const int Constant_NewestSort = 1;
-  static const int Constant_DefaultStreamProfile = 0;
-  static const int Constant_CompressedStreamProfile = 1;
-  static const int Constant_LowQualityStreamProfile = 2;
-  static const int Constant_LowestQualityStreamProfile = 3;
-  static const int Constant_DefaultImageProfile = 0;
-  static const int Constant_HighQualityImageProfile = 1;
-  static const int Constant_LowQualityImageProfile = 2;
-  static const int Constant_LowestQualityImageProfile = 3;
-  static const int Constant_NoFlip = 0;
-  static const int Constant_HorizontalFlip = 1;
-  static const int Constant_VerticalFlip = 2;
-  static const int Constant_HorizontalAndVerticalFlip = 3;
-  static const char *Constant_DisplayCondition;
+  static const char *Constant_PriorityPrefixField;
+  static const char *Constant_StartTimePrefixField;
+  static const int Constant_StretchBackground = 1;
+  static const int Constant_TopLeftBackground = 0;
+  static const char *Constant_UserIdPrefixField;
   void populate ();
 	SystemInterface ();
 	~SystemInterface ();
+	static SystemInterface *instance;
 
 	struct Prefix {
 		StdString agentId;
@@ -174,7 +138,7 @@ public:
 	std::map<StdString, SystemInterface::HashFieldsFunction> hashFieldsMap;
 
 	// Return a newly created Json object containing a command item, or NULL if the command could not be created. commandParams can be NULL if not needed, causing the resulting command to contain empty parameter fields. If commandParams is not NULL, this method becomes responsible for freeing the object when it's no longer needed.
-	Json *createCommand (const SystemInterface::Prefix &prefix, const char *commandName, int commandType, Json *commandParams);
+	Json *createCommand (const SystemInterface::Prefix &prefix, const char *commandName, Json *commandParams = NULL);
 
 	// Populate a command's authorization prefix field using the provided values and hash functions. Returns a boolean value indicating if the field was successfully generated.
 	bool setCommandAuthorization (Json *command, const StdString &authSecret, const StdString &authToken, SystemInterface::HashUpdateFunction hashUpdateFn, SystemInterface::HashDigestFunction hashDigestFn, void *hashContextPtr);
@@ -211,15 +175,6 @@ public:
 
 	// Return the params.id value appearing in the provided command object, or an empty string if no such value was found
 	StdString getCommandRecordId (Json *command);
-
-	// Return the agent name value appearing in the provided AgentStatus command object, or an empty string if no such value was found
-	StdString getCommandAgentName (Json *command);
-
-	// Return the agent address value appearing in the provided AgentStatus command object, or an empty string if no such value was found
-	StdString getCommandAgentAddress (Json *command);
-
-	// Return a boolean value indicating if the provided command object is a record that holds the closed state
-	bool isRecordClosed (Json *command);
 
 	// Return a boolean value indicating if the provided string matches a Windows platform identifier
 	bool isWindowsPlatform (const StdString &platform);
@@ -280,41 +235,35 @@ public:
 	bool getCommandObjectArrayItem (Json *command, const StdString &paramName, int index, Json *destJson);
 	bool getCommandObjectArrayItem (Json *command, const char *paramName, int index, Json *destJson);
 
-  static void getParams_AgentConfiguration (std::list<SystemInterface::Param> *destList);
-  static void getParams_AgentContact (std::list<SystemInterface::Param> *destList);
-  static void getParams_AgentStatus (std::list<SystemInterface::Param> *destList);
+  static void getParams_AnimationCommand (std::list<SystemInterface::Param> *destList);
   static void getParams_CommandResult (std::list<SystemInterface::Param> *destList);
   static void getParams_EmptyObject (std::list<SystemInterface::Param> *destList);
-  static void getParams_FindItems (std::list<SystemInterface::Param> *destList);
-  static void getParams_ReportContact (std::list<SystemInterface::Param> *destList);
-  static void getParams_ReportStatus (std::list<SystemInterface::Param> *destList);
+  static void getParams_PlayAnimation (std::list<SystemInterface::Param> *destList);
+  static void getParams_RemoveWindow (std::list<SystemInterface::Param> *destList);
   static void getParams_ShowColorFillBackground (std::list<SystemInterface::Param> *destList);
+  static void getParams_ShowCountdownWindow (std::list<SystemInterface::Param> *destList);
   static void getParams_ShowFileImageBackground (std::list<SystemInterface::Param> *destList);
+  static void getParams_ShowIconLabelWindow (std::list<SystemInterface::Param> *destList);
   static void getParams_ShowResourceImageBackground (std::list<SystemInterface::Param> *destList);
-  static void getParams_TaskItem (std::list<SystemInterface::Param> *destList);
-  static void populateDefaultFields_AgentConfiguration (Json *destObject);
-  static void populateDefaultFields_AgentContact (Json *destObject);
-  static void populateDefaultFields_AgentStatus (Json *destObject);
+  static void populateDefaultFields_AnimationCommand (Json *destObject);
   static void populateDefaultFields_CommandResult (Json *destObject);
   static void populateDefaultFields_EmptyObject (Json *destObject);
-  static void populateDefaultFields_FindItems (Json *destObject);
-  static void populateDefaultFields_ReportContact (Json *destObject);
-  static void populateDefaultFields_ReportStatus (Json *destObject);
+  static void populateDefaultFields_PlayAnimation (Json *destObject);
+  static void populateDefaultFields_RemoveWindow (Json *destObject);
   static void populateDefaultFields_ShowColorFillBackground (Json *destObject);
+  static void populateDefaultFields_ShowCountdownWindow (Json *destObject);
   static void populateDefaultFields_ShowFileImageBackground (Json *destObject);
+  static void populateDefaultFields_ShowIconLabelWindow (Json *destObject);
   static void populateDefaultFields_ShowResourceImageBackground (Json *destObject);
-  static void populateDefaultFields_TaskItem (Json *destObject);
-  static void hashFields_AgentConfiguration (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
-  static void hashFields_AgentContact (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
-  static void hashFields_AgentStatus (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
+  static void hashFields_AnimationCommand (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
   static void hashFields_CommandResult (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
   static void hashFields_EmptyObject (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
-  static void hashFields_FindItems (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
-  static void hashFields_ReportContact (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
-  static void hashFields_ReportStatus (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
+  static void hashFields_PlayAnimation (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
+  static void hashFields_RemoveWindow (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
   static void hashFields_ShowColorFillBackground (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
+  static void hashFields_ShowCountdownWindow (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
   static void hashFields_ShowFileImageBackground (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
+  static void hashFields_ShowIconLabelWindow (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
   static void hashFields_ShowResourceImageBackground (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
-  static void hashFields_TaskItem (Json *commandParams, SystemInterface::HashUpdateFunction hashUpdateFn, void *hashContextPtr);
 };
 #endif

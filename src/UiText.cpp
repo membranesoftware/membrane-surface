@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -29,14 +29,15 @@
 */
 #include "Config.h"
 #include <stdlib.h>
-#include "Result.h"
+#include "App.h"
 #include "Log.h"
 #include "StdString.h"
-#include "App.h"
+#include "OsUtil.h"
 #include "Resource.h"
 #include "Json.h"
 #include "UiText.h"
 
+UiText *UiText::instance = NULL;
 const StdString UiText::DefaultLanguage = StdString ("en");
 
 UiText::UiText () {
@@ -47,7 +48,7 @@ UiText::~UiText () {
 
 }
 
-int UiText::load (const StdString &language) {
+OsUtil::Result UiText::load (const StdString &language) {
 	Buffer *buffer;
 	StdString path, text, s;
 	size_t curpos, pos1, pos2;
@@ -59,7 +60,7 @@ int UiText::load (const StdString &language) {
 		buffer = App::instance->resource.loadFile (path);
 	}
 	if (! buffer) {
-		return (Result::FileOpenFailedError);
+		return (OsUtil::Result::FileOpenFailedError);
 	}
 
 	text.assignBuffer (buffer);
@@ -79,7 +80,7 @@ int UiText::load (const StdString &language) {
 	}
 
 	App::instance->resource.unloadFile (path);
-	return (Result::Success);
+	return (OsUtil::Result::Success);
 }
 
 StdString UiText::getText (int stringIndex) {
@@ -89,7 +90,6 @@ StdString UiText::getText (int stringIndex) {
 	if ((pos < 0) || (pos >= (int) textStrings.size ())) {
 		return (StdString (""));
 	}
-
 	return (textStrings.at (pos));
 }
 
@@ -102,7 +102,6 @@ StdString UiText::getCountText (int64_t amount, int singularStringIndex, int plu
 	else {
 		s = getText (pluralStringIndex);
 	}
-
 	return (StdString::createSprintf ("%lli %s", (long long int) amount, s.c_str ()));
 }
 

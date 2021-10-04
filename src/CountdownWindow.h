@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -27,44 +27,44 @@
 * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
 */
-// Panel that implements scrolling functions for viewing content that extends beyond its own boundaries
+// Panel that shows a countdown indicator
 
-#ifndef SCROLL_VIEW_H
-#define SCROLL_VIEW_H
+#ifndef COUNTDOWN_WINDOW_H
+#define COUNTDOWN_WINDOW_H
 
+#include "UiConfiguration.h"
+#include "Image.h"
+#include "Label.h"
+#include "ProgressBar.h"
 #include "Panel.h"
 
-class ScrollView : public Panel {
+class CountdownWindow : public Panel {
 public:
-	ScrollView ();
-	virtual ~ScrollView ();
+	CountdownWindow (Sprite *iconSprite, const StdString &labelText = StdString (""), UiConfiguration::FontType labelTextFontType = UiConfiguration::BodyFont);
+ 	virtual ~CountdownWindow ();
 
-	// Read-write data members
-	bool isKeyboardScrollEnabled;
-	bool isMouseWheelScrollEnabled;
-	bool isExitedMouseWheelScrollEnabled;
+	// Read-only data members
+	bool isRightAligned;
 
-	// Set the size of the viewable area
-	virtual void setViewSize (float viewWidth, float viewHeight);
+	// Begin the window's reveal animation
+	void reveal ();
 
-	// Set the vertical scroll speed to use for mouse wheel events, in pixels
-	void setVerticalScrollSpeed (float speed);
-
-	// Set the minimum and maximum extent of the view's vertical scroll position
-	void setVerticalScrollBounds (float minY, float maxY);
-
-	// Return a boolean value indicating if the view has scrolled to its bottom extent
-	bool isScrolledToBottom ();
+	// Begin the window's countdown animation with a timeout of duration milliseconds
+	void countdown (int duration);
 
 protected:
-	// Execute operations appropriate when the widget receives new mouse state and return a boolean value indicating if mouse wheel events were consumed and should no longer be processed
-	virtual bool doProcessMouseState (const Widget::MouseState &mouseState);
+	// Reset the panel's widget layout as appropriate for its content and configuration
+	void refreshLayout ();
 
-	// Update the widget as appropriate for a received keypress event and return a boolean value indicating if the event was consumed and should no longer be processed
-	virtual bool doProcessKeyEvent (SDL_Keycode keycode, bool isShiftDown, bool isControlDown);
+	// Execute operations to update object state as appropriate for an elapsed millisecond time period
+	void doUpdate (int msElapsed);
 
 private:
-	float verticalScrollSpeed;
+	Label *label;
+	Image *image;
+	ProgressBar *progressBar;
+	int countdownTime;
+	int countdownClock;
 };
 
 #endif

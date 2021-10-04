@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -27,26 +27,55 @@
 * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
 */
-// Utility methods for operations related to media files and streams
+// Class that holds a lua_State object and executes scripts
 
-#ifndef MEDIA_UTIL_H
-#define MEDIA_UTIL_H
+#ifndef LUA_SCRIPT_H
+#define LUA_SCRIPT_H
 
+extern "C" {
+#include "lua.h"
+}
+#include "SDL2/SDL.h"
 #include "StdString.h"
 
-class MediaUtil {
+class LuaScript {
 public:
-	static const float AspectRatioMatchEpsilon;
+	LuaScript (const StdString &script = StdString (""));
+	~LuaScript ();
 
-	// Return a string containing the name of the specified aspect ratio, or an empty string if no such name was found.
-	static StdString getAspectRatioDisplayString (int width, int height);
-	static StdString getAspectRatioDisplayString (float ratio);
+	// Read-only data members
+	StdString script;
+	int runResult;
+	StdString runErrorText;
 
-	// Return a string containing text representing the specified bitrate in readable format
-	static StdString getBitrateDisplayString (int64_t bitsPerSecond);
+	// Run the provided LuaScript object and delete it when complete
+	static void run (void *luaScriptPtr);
 
-	// Return a string containing the name of the specified frame size, or an empty string if no such name was found.
-	static StdString getFrameSizeName (int width, int height);
+	// lua_register functions
+	static int help (lua_State *L);
+	static int print (lua_State *L);
+	static int logconsole (lua_State *L);
+	static int loglevel (lua_State *L);
+	static int dofile (lua_State *L);
+	static int quit (lua_State *L);
+	static int sleep (lua_State *L);
+
+	struct Function {
+		const lua_CFunction fn;
+		const char *name;
+		const char *parameters;
+		const int helpText;
+	};
+
+	static void argvInteger (lua_State *L, int position, int *value);
+	static void argvString (lua_State *L, int position, char **value);
+	static void argvBoolean (lua_State *L, int position, bool *value);
+
+	// sort predicate function
+	static bool compareFunctions (const Function &a, const Function &b);
+
+private:
+	lua_State *state;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -30,9 +30,9 @@
 #include "Config.h"
 #include <stdlib.h>
 #include <list>
-#include "Result.h"
 #include "Log.h"
 #include "App.h"
+#include "Input.h"
 #include "OsUtil.h"
 #include "StdString.h"
 #include "StringList.h"
@@ -44,9 +44,6 @@
 #include "Button.h"
 #include "LabelWindow.h"
 #include "ProgressBar.h"
-#include "TooltipWindow.h"
-#include "Menu.h"
-#include "Chip.h"
 #include "Ui.h"
 
 Ui::Ui ()
@@ -55,6 +52,7 @@ Ui::Ui ()
 , isFirstResumeComplete (false)
 , refcount (0)
 , refcountMutex (NULL)
+, lastWindowCloseCount (0)
 {
 	refcountMutex = SDL_CreateMutex ();
 
@@ -68,7 +66,6 @@ Ui::~Ui () {
 		rootPanel->release ();
 		rootPanel = NULL;
 	}
-
 	if (refcountMutex) {
 		SDL_DestroyMutex (refcountMutex);
 		refcountMutex = NULL;
@@ -83,7 +80,6 @@ void Ui::retain () {
 		refcount = 1;
 	}
 	SDL_UnlockMutex (refcountMutex);
-
 }
 
 void Ui::release () {
@@ -97,7 +93,6 @@ void Ui::release () {
 		isdestroyed = true;
 	}
 	SDL_UnlockMutex (refcountMutex);
-
 	if (isdestroyed) {
 		delete (this);
 	}
@@ -108,32 +103,30 @@ int Ui::load () {
 	int result;
 
 	if (isLoaded) {
-		return (Result::Success);
+		return (OsUtil::Result::Success);
 	}
-
 	path = getSpritePath ();
 	if (! path.empty ()) {
 		result = sprites.load (path);
-		if (result != Result::Success) {
+		if (result != OsUtil::Result::Success) {
 			Log::err ("Failed to load sprite resources");
 			return (result);
 		}
 	}
 
 	result = doLoad ();
-	if (result != Result::Success) {
+	if (result != OsUtil::Result::Success) {
 		return (result);
 	}
 
 	isLoaded = true;
-	return (Result::Success);
+	return (OsUtil::Result::Success);
 }
 
 void Ui::unload () {
 	if (! isLoaded) {
 		return;
 	}
-
 	clearPopupWidgets ();
 
 	rootPanel->clear ();
@@ -150,7 +143,7 @@ StdString Ui::getSpritePath () {
 
 int Ui::doLoad () {
 	// Default implementation does nothing
-	return (Result::Success);
+	return (OsUtil::Result::Success);
 }
 
 void Ui::doUnload () {
@@ -158,26 +151,21 @@ void Ui::doUnload () {
 }
 
 void Ui::showShutdownWindow () {
-	UiConfiguration *uiconfig;
-	UiText *uitext;
 	LabelWindow *label;
 	ProgressBar *bar;
 	Panel *panel;
-
-	uiconfig = &(App::instance->uiConfig);
-	uitext = &(App::instance->uiText);
 
 	clearPopupWidgets ();
 
 	panel = new Panel ();
 	panel->setFillBg (true, Color (0.0f, 0.0f, 0.0f, 0.0f));
-	panel->bgColor.translate (0.0f, 0.0f, 0.0f, uiconfig->overlayWindowAlpha, uiconfig->backgroundCrossFadeDuration);
+	panel->bgColor.translate (0.0f, 0.0f, 0.0f, UiConfiguration::instance->overlayWindowAlpha, UiConfiguration::instance->backgroundCrossFadeDuration);
 	panel->setFixedSize (true, App::instance->rootPanel->width, App::instance->rootPanel->height);
 
-	label = new LabelWindow (new Label (uitext->getText (UiTextString::ShuttingDownApp), UiConfiguration::CaptionFont, uiconfig->primaryTextColor));
-	label->setFillBg (true, uiconfig->lightBackgroundColor);
+	label = new LabelWindow (new Label (StdString::createSprintf ("%s %s", UiText::instance->getText (UiTextString::ShuttingDown).capitalized ().c_str (), APPLICATION_NAME), UiConfiguration::CaptionFont, UiConfiguration::instance->primaryTextColor));
+	label->setFillBg (true, UiConfiguration::instance->lightBackgroundColor);
 
-	bar = new ProgressBar (label->width, uiconfig->progressBarHeight);
+	bar = new ProgressBar (label->width, UiConfiguration::instance->progressBarHeight);
 	bar->setIndeterminate (true);
 
 	App::instance->rootPanel->addWidget (panel);
@@ -205,13 +193,17 @@ bool Ui::doProcessKeyEvent (SDL_Keycode keycode, bool isShiftDown, bool isContro
 	return (false);
 }
 
+bool Ui::doProcessWindowCloseEvent () {
+	// Default implementation does nothing
+	return (false);
+}
+
 void Ui::resume () {
 	StdString title;
 
 	if (! isLoaded) {
 		return;
 	}
-
 	if (rootPanel->id <= 0) {
 		rootPanel->id = App::instance->getUniqueId ();
 	}
@@ -220,6 +212,7 @@ void Ui::resume () {
 	rootPanel->resetInputState ();
 	rootPanel->isInputSuspended = false;
 	App::instance->rootPanel->addWidget (rootPanel);
+	lastWindowCloseCount = Input::instance->windowCloseCount;
 
 	doResume ();
 	isFirstResumeComplete = true;
@@ -229,13 +222,22 @@ void Ui::pause () {
 	if (! isLoaded) {
 		return;
 	}
-
 	App::instance->rootPanel->removeWidget (rootPanel);
+	lastWindowCloseCount = Input::instance->windowCloseCount;
 	clearPopupWidgets ();
 	doPause ();
 }
 
 void Ui::update (int msElapsed) {
+	int count;
+
+	count = Input::instance->windowCloseCount;
+	if (lastWindowCloseCount != count) {
+		lastWindowCloseCount = count;
+		if (! doProcessWindowCloseEvent ()) {
+			App::instance->shutdown ();
+		}
+	}
 	doUpdate (msElapsed);
 }
 

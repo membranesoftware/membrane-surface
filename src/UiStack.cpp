@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -31,10 +31,12 @@
 #include <stdlib.h>
 #include "SDL2/SDL.h"
 #include "App.h"
-#include "Result.h"
+#include "OsUtil.h"
 #include "StdString.h"
 #include "Log.h"
+#include "Input.h"
 #include "Ui.h"
+#include "UiConfiguration.h"
 #include "TooltipWindow.h"
 #include "UiStack.h"
 
@@ -172,7 +174,7 @@ void UiStack::update (int msElapsed) {
 		keyFocusTarget.clear ();
 	}
 
-	mousewidget = App::instance->rootPanel->findWidget ((float) App::instance->input.mouseX, (float) App::instance->input.mouseY, true);
+	mousewidget = App::instance->rootPanel->findWidget ((float) Input::instance->mouseX, (float) Input::instance->mouseY, true);
 	if (! mousewidget) {
 		mouseHoverTarget.clear ();
 		deactivateMouseHover ();
@@ -217,7 +219,7 @@ void UiStack::executeStackCommands () {
 				break;
 			}
 			result = ui->load ();
-			if (result != Result::Success) {
+			if (result != OsUtil::Result::Success) {
 				Log::err ("Failed to load UI resources; err=%i", result);
 				ui->release ();
 				break;
@@ -242,7 +244,7 @@ void UiStack::executeStackCommands () {
 				break;
 			}
 			result = ui->load ();
-			if (result != Result::Success) {
+			if (result != OsUtil::Result::Success) {
 				Log::err ("Failed to load UI resources; err=%i", result);
 				ui->release ();
 				break;
@@ -340,15 +342,12 @@ void UiStack::setKeyFocusTarget (Widget *widget) {
 }
 
 void UiStack::activateMouseHover () {
-	UiConfiguration *uiconfig;
 	Widget *widget;
 	TooltipWindow *tooltipwindow;
 	StdString text;
 	float x, y, max;
 
-	uiconfig = &(App::instance->uiConfig);
 	tooltip.destroyAndClear ();
-
 	widget = mouseHoverTarget.widget;
 	if (widget) {
 		text.assign (widget->tooltipText);
@@ -363,70 +362,70 @@ void UiStack::activateMouseHover () {
 		switch (widget->tooltipAlignment) {
 			case Widget::TopAlignment: {
 				x += ((widget->width / 2.0f) - (tooltipwindow->width / 2.0f));
-				y -= (tooltipwindow->height + uiconfig->marginSize);
+				y -= (tooltipwindow->height + UiConfiguration::instance->marginSize);
 
-				if (x < uiconfig->paddingSize) {
-					x = uiconfig->paddingSize;
+				if (x < UiConfiguration::instance->paddingSize) {
+					x = UiConfiguration::instance->paddingSize;
 				}
-				max = App::instance->rootPanel->width - tooltipwindow->width - uiconfig->paddingSize;
+				max = App::instance->rootPanel->width - tooltipwindow->width - UiConfiguration::instance->paddingSize;
 				if (x > max) {
 					x = max;
 				}
 
-				if (y < uiconfig->paddingSize) {
-					y = widget->screenY + widget->height + uiconfig->marginSize;
+				if (y < UiConfiguration::instance->paddingSize) {
+					y = widget->screenY + widget->height + UiConfiguration::instance->marginSize;
 				}
 				break;
 			}
 			case Widget::LeftAlignment: {
-				x -= (tooltipwindow->width + uiconfig->marginSize);
+				x -= (tooltipwindow->width + UiConfiguration::instance->marginSize);
 				y += ((widget->height / 2.0f) - (tooltipwindow->height / 2.0f));
 
-				if (y < uiconfig->paddingSize) {
-					y = uiconfig->paddingSize;
+				if (y < UiConfiguration::instance->paddingSize) {
+					y = UiConfiguration::instance->paddingSize;
 				}
-				max = App::instance->rootPanel->height - tooltipwindow->height - uiconfig->paddingSize;
+				max = App::instance->rootPanel->height - tooltipwindow->height - UiConfiguration::instance->paddingSize;
 				if (y > max) {
 					y = max;
 				}
 
-				if (x < uiconfig->paddingSize) {
-					x = widget->screenX + widget->width + uiconfig->marginSize;
+				if (x < UiConfiguration::instance->paddingSize) {
+					x = widget->screenX + widget->width + UiConfiguration::instance->marginSize;
 				}
 				break;
 			}
 			case Widget::RightAlignment: {
-				x += (widget->width + uiconfig->marginSize);
+				x += (widget->width + UiConfiguration::instance->marginSize);
 				y += ((widget->height / 2.0f) - (tooltipwindow->height / 2.0f));
 
-				if (y < uiconfig->paddingSize) {
-					y = uiconfig->paddingSize;
+				if (y < UiConfiguration::instance->paddingSize) {
+					y = UiConfiguration::instance->paddingSize;
 				}
-				max = App::instance->rootPanel->height - tooltipwindow->height - uiconfig->paddingSize;
+				max = App::instance->rootPanel->height - tooltipwindow->height - UiConfiguration::instance->paddingSize;
 				if (y > max) {
 					y = max;
 				}
 
-				if ((x + tooltipwindow->width) >= (App::instance->rootPanel->width - uiconfig->paddingSize)) {
-					x = widget->screenX - (tooltipwindow->width + uiconfig->marginSize);
+				if ((x + tooltipwindow->width) >= (App::instance->rootPanel->width - UiConfiguration::instance->paddingSize)) {
+					x = widget->screenX - (tooltipwindow->width + UiConfiguration::instance->marginSize);
 				}
 				break;
 			}
 			case Widget::BottomAlignment:
 			default: {
 				x += ((widget->width / 2.0f) - (tooltipwindow->width / 2.0f));
-				y += (widget->height + uiconfig->marginSize);
+				y += (widget->height + UiConfiguration::instance->marginSize);
 
-				if (x < uiconfig->paddingSize) {
-					x = uiconfig->paddingSize;
+				if (x < UiConfiguration::instance->paddingSize) {
+					x = UiConfiguration::instance->paddingSize;
 				}
-				max = App::instance->rootPanel->width - tooltipwindow->width - uiconfig->paddingSize;
+				max = App::instance->rootPanel->width - tooltipwindow->width - UiConfiguration::instance->paddingSize;
 				if (x > max) {
 					x = max;
 				}
 
-				if ((y + tooltipwindow->height) >= (App::instance->rootPanel->height - uiconfig->paddingSize)) {
-					y = widget->screenY - (tooltipwindow->height + uiconfig->marginSize);
+				if ((y + tooltipwindow->height) >= (App::instance->rootPanel->height - UiConfiguration::instance->paddingSize)) {
+					y = widget->screenY - (tooltipwindow->height + UiConfiguration::instance->marginSize);
 				}
 				break;
 			}
@@ -441,14 +440,14 @@ void UiStack::activateMouseHover () {
 
 void UiStack::deactivateMouseHover () {
 	tooltip.destroyAndClear ();
-	mouseHoverClock = App::instance->uiConfig.mouseHoverThreshold;
+	mouseHoverClock = UiConfiguration::instance->mouseHoverThreshold;
 	isMouseHoverSuspended = false;
 	isMouseHoverActive = false;
 }
 
 void UiStack::suspendMouseHover () {
 	tooltip.destroyAndClear ();
-	mouseHoverClock = App::instance->uiConfig.mouseHoverThreshold;
+	mouseHoverClock = UiConfiguration::instance->mouseHoverThreshold;
 	isMouseHoverActive = false;
 	isMouseHoverSuspended = true;
 }

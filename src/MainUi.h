@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -32,9 +32,12 @@
 #ifndef MAIN_UI_H
 #define MAIN_UI_H
 
+#include <list>
+#include <map>
 #include "StdString.h"
 #include "Buffer.h"
 #include "Panel.h"
+#include "Json.h"
 #include "Ui.h"
 
 class MainUi : public Ui {
@@ -51,42 +54,55 @@ protected:
 	// Unload subclass-specific resources
 	void doUnload ();
 
-	// Remove and destroy any subclass-specific popup widgets that have been created by the UI
-	void doClearPopupWidgets ();
-
-	// Execute subclass-specific operations to refresh the interface's layout as appropriate for the current set of UiConfiguration values
-	void doRefresh ();
-
-	// Update subclass-specific interface state as appropriate when the Ui becomes inactive
-	void doPause ();
-
-	// Update subclass-specific interface state as appropriate when the Ui becomes active
-	void doResume ();
-
 	// Update subclass-specific interface state as appropriate for an elapsed millisecond time period
 	void doUpdate (int msElapsed);
 
-	// Reload subclass-specific interface resources as needed to account for a new application window size
-	void doResize ();
-
-	// Execute subclass-specific actions appropriate for a received keypress event and return a boolean value indicating if the event was consumed and should no longer be processed
-	bool doProcessKeyEvent (SDL_Keycode keycode, bool isShiftDown, bool isControlDown);
-
 private:
-	// Create the backgroundPanel object if it doesn't already exist
-	void populateBackgroundPanel ();
+	// Execute cmdInv as a surface command. If the command is PlayAnimation, execute it only if allowPlayAnimation is true.
+	void executeCommand (Json *cmdInv, bool allowPlayAnimation = false);
+	void removeWindow (Json *cmdInv);
+	void playAnimation (Json *cmdInv);
+	void showColorFillBackground (Json *cmdInv);
+	void showResourceImageBackground (Json *cmdInv);
+	void showFileImageBackground (Json *cmdInv);
+	void showIconLabelWindow (Json *cmdInv);
+	void showCountdownWindow (Json *cmdInv);
 
-	// Execute a ShowColorFillBackground command
-	void showColorFillBackground (int fillColorR, int fillColorG, int fillColorB);
-
-	// Execute a ShowResourceImageBackground command
-	void showResourceImageBackground (const StdString &imagePath);
-
-	// Execute a ShowFileImageBackground command
-	void showFileImageBackground (const StdString &imagePath);
+	// Callback functions
+	struct BackgroundImageLoadedContext {
+		MainUi *ui;
+		int backgroundType;
+	};
+	static void showFileImageBackground_imageLoaded (void *ctxPtr, Widget *widgetPtr);
 
 	Buffer commandBuffer;
 	Panel *backgroundPanel;
+
+	struct AnimationCommand {
+		int executeTime;
+		Json *cmdInv;
+		AnimationCommand (): executeTime (0), cmdInv (NULL) { }
+	};
+	std::list<MainUi::AnimationCommand> animationList;
+	std::map<StdString, Widget *> windowIdMap;
+
+	// Remove all items from animationList
+	void clearAnimation ();
+
+	// Remove all items from windowIdMap
+	void clearWindowIdMap ();
+
+	// Set an entry in windowIdMap
+	void setWindowId (const StdString &windowId, Widget *widget);
+
+	// Update animation state for an elapsed time period
+	void updateAnimation (int msElapsed);
+
+	// Return the UiConfiguration core sprites index associated with a SystemInterface Icon constant, or -1 if no sprite index matched
+	int getIconType (int icon);
+
+	// Set a widget's position to x/y, with negative values indicating a position aligned from the interface right or top
+	void setWidgetPosition (Widget *widget, float x, float y);
 };
 
 #endif

@@ -1,7 +1,28 @@
-WindowTitle Membrane Surface
-ShuttingDownApp Shutting down Membrane Surface
+ConsoleStartText1 Application started in console mode
+ConsoleStartText2 Enter commands as statements for Lua
+ConsoleStartText3 For more information, see https://www.lua.org
+ConsoleStartText4 For a list of functions type help()
+LuaScriptHelpHelpText Print a list of functions available for execution
+LuaScriptQuitHelpText Exit the application
+LuaScriptPrintHelpText Print any number of values to the console
+LuaScriptDofileHelpText Execute "filename" as a Lua script
+LuaScriptSleepHelpText Delay script execution
+LuaSyntaxErrorText Lua script parse failed (check syntax)
+LuaParseErrorText Lua script parse failed (internal error)
+LuaScriptExecutionErrorText Lua script execution failed
+EnvironmentVariables environment variables
+LuaScriptRunScriptHelpText Lua script that should execute on application launch
+LuaScriptMissingFunctionArgumentErrorText missing function argument
+LuaScriptEmptyStringArgumentErrorText string argument cannot be empty
+LuaScriptLoadScriptErrorText failed to load script (internal error)
+LuaScriptLoadScriptFileErrorText failed to load script (file not found)
+LuaScriptLoadScriptSyntaxErrorText invalid syntax in loaded script file
+LuaScriptLoadScriptExecutionErrorText script execution failed
 Ok ok
 Yes yes
 No no
+ShuttingDown shutting down
+Confirm confirm
 Cancel cancel
 Remove remove
+Console console

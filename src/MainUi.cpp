@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/select.h>
-#include "Result.h"
+#include <list>
 #include "StdString.h"
 #include "Log.h"
 #include "App.h"
@@ -40,9 +40,12 @@
 #include "ImageWindow.h"
 #include "Ui.h"
 #include "Buffer.h"
+#include "OsUtil.h"
 #include "Json.h"
 #include "Color.h"
 #include "Panel.h"
+#include "IconLabelWindow.h"
+#include "CountdownWindow.h"
 #include "MainUi.h"
 
 const int MainUi::MaxCommandSize = (256 * 1024); // bytes
@@ -55,43 +58,98 @@ MainUi::MainUi ()
 }
 
 MainUi::~MainUi () {
+	clearAnimation ();
+	clearWindowIdMap ();
+}
 
+void MainUi::clearAnimation () {
+	std::list<MainUi::AnimationCommand>::iterator i, end;
+
+	i = animationList.begin ();
+	end = animationList.end ();
+	while (i != end) {
+		if (i->cmdInv) {
+			delete (i->cmdInv);
+			i->cmdInv = NULL;
+		}
+		++i;
+	}
+	animationList.clear ();
+}
+
+void MainUi::clearWindowIdMap () {
+	std::map<StdString, Widget *>::iterator i, end;
+
+	i = windowIdMap.begin ();
+	end = windowIdMap.end ();
+	while (i != end) {
+		if (i->second) {
+			i->second->release ();
+			i->second = NULL;
+		}
+		++i;
+	}
+	windowIdMap.clear ();
+}
+
+void MainUi::setWindowId (const StdString &windowId, Widget *widget) {
+	std::map<StdString, Widget *>::iterator pos;
+
+	if (windowId.empty () || (! widget)) {
+		return;
+	}
+	widget->retain ();
+	pos = windowIdMap.find (windowId);
+	if (pos == windowIdMap.end ()) {
+		windowIdMap.insert (std::pair<StdString, Widget *> (windowId, widget));
+	}
+	else {
+		if (pos->second) {
+			pos->second->isDestroyed = true;
+			pos->second->release ();
+		}
+		pos->second = widget;
+	}
 }
 
 int MainUi::doLoad () {
-	return (Result::Success);
+	StdString path;
+	ImageWindow *image;
+	MainUi::BackgroundImageLoadedContext *ctx;
+
+	backgroundPanel = (Panel *) addWidget (new Panel ());
+	backgroundPanel->setFixedSize (true, App::instance->windowWidth, App::instance->windowHeight);
+	backgroundPanel->zLevel = Widget::MinZLevel;
+
+	path = OsUtil::getEnvValue ("BACKGROUND_IMAGE_PATH", "");
+	if (! path.empty ()) {
+		ctx = new MainUi::BackgroundImageLoadedContext ();
+		ctx->ui = this;
+		ctx->backgroundType = OsUtil::getEnvValue ("BACKGROUND_IMAGE_TYPE", (int) 0);
+		retain ();
+		image = (ImageWindow *) backgroundPanel->addWidget (new ImageWindow ());
+		image->loadCallback = Widget::EventCallbackContext (showFileImageBackground_imageLoaded, ctx);
+		if (ctx->backgroundType == SystemInterface::Constant_StretchBackground) {
+			image->setLoadResize (true, (float) App::instance->windowWidth);
+		}
+		image->setImageFilePath (path, true);
+	}
+
+	return (OsUtil::Result::Success);
 }
 
 void MainUi::doUnload () {
-
-}
-
-void MainUi::doClearPopupWidgets () {
-
-}
-
-void MainUi::doResume () {
-
-}
-
-void MainUi::doRefresh () {
-
-}
-
-void MainUi::doPause () {
-
+	backgroundPanel = NULL;
 }
 
 void MainUi::doUpdate (int msElapsed) {
-	SystemInterface *interface;
 	StdString s;
 	Json *cmd;
 	fd_set rfds;
 	struct timeval tv;
 	char buf[8192];
-	int len, commandid;
+	int len;
 
-	interface = &(App::instance->systemInterface);
 	while (true) {
 		FD_ZERO (&rfds);
 		FD_SET (0, &rfds);
@@ -101,7 +159,6 @@ void MainUi::doUpdate (int msElapsed) {
 		if (len != 1) {
 			break;
 		}
-
 		len = read (0, buf, sizeof (buf));
 		if (len <= 0) {
 			break;
@@ -117,88 +174,274 @@ void MainUi::doUpdate (int msElapsed) {
 		else {
 			s.assign (buf, len);
 		}
-
-		if (! interface->parseCommand (s, &cmd)) {
+		if (!(SystemInterface::instance->parseCommand (s, &cmd))) {
 			if (commandBuffer.empty ()) {
 				commandBuffer.add ((uint8_t *) buf, len);
 			}
 			if (commandBuffer.length > MainUi::MaxCommandSize) {
 				commandBuffer.reset ();
 			}
-
 			continue;
 		}
 
 		commandBuffer.reset ();
-		commandid = interface->getCommandId (cmd);
-		switch (commandid) {
-			case SystemInterface::CommandId_ShutdownAgent: {
-				App::instance->shutdown ();
-				break;
-			}
-			case SystemInterface::CommandId_ShowColorFillBackground: {
-				showColorFillBackground (interface->getCommandNumberParam (cmd, "fillColorR", (int) 0), interface->getCommandNumberParam (cmd, "fillColorG", (int) 0), interface->getCommandNumberParam (cmd, "fillColorB", (int) 0));
-				break;
-			}
-			case SystemInterface::CommandId_ShowResourceImageBackground: {
-				showResourceImageBackground (interface->getCommandStringParam (cmd, "imagePath", StdString ("")));
-				break;
-			}
-			case SystemInterface::CommandId_ShowFileImageBackground: {
-				showFileImageBackground (interface->getCommandStringParam (cmd, "imagePath", StdString ("")));
-				break;
-			}
-		}
+		executeCommand (cmd, true);
 		delete (cmd);
 	}
+
+	updateAnimation (msElapsed);
 }
 
-void MainUi::doResize () {
-
-}
-
-bool MainUi::doProcessKeyEvent (SDL_Keycode keycode, bool isShiftDown, bool isControlDown) {
-	return (false);
-}
-
-void MainUi::populateBackgroundPanel () {
-	if (! backgroundPanel) {
-		backgroundPanel = (Panel *) addWidget (new Panel ());
-		backgroundPanel->setFixedSize (true, App::instance->windowWidth, App::instance->windowHeight);
-		backgroundPanel->zLevel = Widget::MinZLevel;
+void MainUi::executeCommand (Json *cmdInv, bool allowPlayAnimation) {
+	switch (SystemInterface::instance->getCommandId (cmdInv)) {
+		case SystemInterface::CommandId_RemoveWindow: {
+			removeWindow (cmdInv);
+			break;
+		}
+		case SystemInterface::CommandId_PlayAnimation: {
+			if (allowPlayAnimation) {
+				playAnimation (cmdInv);
+			}
+			break;
+		}
+		case SystemInterface::CommandId_ShowColorFillBackground: {
+			showColorFillBackground (cmdInv);
+			break;
+		}
+		case SystemInterface::CommandId_ShowResourceImageBackground: {
+			showResourceImageBackground (cmdInv);
+			break;
+		}
+		case SystemInterface::CommandId_ShowFileImageBackground: {
+			showFileImageBackground (cmdInv);
+			break;
+		}
+		case SystemInterface::CommandId_ShowIconLabelWindow: {
+			showIconLabelWindow (cmdInv);
+			break;
+		}
+		case SystemInterface::CommandId_ShowCountdownWindow: {
+			showCountdownWindow (cmdInv);
+			break;
+		}
 	}
 }
 
-void MainUi::showColorFillBackground (int fillColorR, int fillColorG, int fillColorB) {
-	populateBackgroundPanel ();
-	backgroundPanel->clear ();
-	backgroundPanel->setFillBg (true, Color::fromByteValues ((uint8_t) fillColorR, (uint8_t) fillColorG, (uint8_t) fillColorB));
+void MainUi::removeWindow (Json *cmdInv) {
+	StdString id;
+	std::map<StdString, Widget *>::iterator pos;
+
+	id = SystemInterface::instance->getCommandStringParam (cmdInv, "windowId", StdString (""));
+	if (id.empty ()) {
+		return;
+	}
+	pos = windowIdMap.find (id);
+	if (pos == windowIdMap.end ()) {
+		return;
+	}
+	if (pos->second) {
+		pos->second->isDestroyed = true;
+		pos->second->release ();
+		pos->second = NULL;
+	}
+	windowIdMap.erase (pos);
 }
 
-void MainUi::showResourceImageBackground (const StdString &imagePath) {
-	ImageWindow *image;
+void MainUi::playAnimation (Json *cmdInv) {
+	Json item, execcmd;
+	MainUi::AnimationCommand listcmd;
+	int i, count;
 
-	if (imagePath.empty ()) {
+	clearAnimation ();
+	count = SystemInterface::instance->getCommandArrayLength (cmdInv, "commands");
+	for (i = 0; i < count; ++i) {
+		if (SystemInterface::instance->getCommandObjectArrayItem (cmdInv, "commands", i, &item)) {
+			listcmd.executeTime = item.getNumber ("executeTime", (int) 0);
+			if (item.getObject ("command", &execcmd)) {
+				listcmd.cmdInv = execcmd.copy ();
+				animationList.push_back (listcmd);
+			}
+		}
+	}
+}
+
+void MainUi::updateAnimation (int msElapsed) {
+	std::list<MainUi::AnimationCommand>::iterator i, end, pos;
+	int mintime;
+
+	if (animationList.size () <= 0) {
 		return;
 	}
 
-	populateBackgroundPanel ();
-	backgroundPanel->clear ();
-	image = (ImageWindow *) backgroundPanel->addWidget (new ImageWindow ());
-	image->setLoadResize (true, (float) App::instance->windowWidth);
-	image->setImageFilePath (imagePath);
+	while (true) {
+		i = animationList.begin ();
+		end = animationList.end ();
+		mintime = -1;
+		pos = end;
+		while (i != end) {
+			if ((mintime < 0) || (i->executeTime < mintime)) {
+				mintime = i->executeTime;
+				pos = i;
+			}
+			++i;
+		}
+		if ((mintime > msElapsed) || (pos == end)) {
+			break;
+		}
+
+		if (pos->cmdInv) {
+			executeCommand (pos->cmdInv);
+			delete (pos->cmdInv);
+		}
+		animationList.erase (pos);
+	}
+
+	i = animationList.begin ();
+	end = animationList.end ();
+	while (i != end) {
+		i->executeTime -= msElapsed;
+		++i;
+	}
 }
 
-void MainUi::showFileImageBackground (const StdString &imagePath) {
-	ImageWindow *image;
+int MainUi::getIconType (int icon) {
+	switch (icon) {
+		case SystemInterface::Constant_InfoIcon: {
+			return (UiConfiguration::InfoIconSprite);
+		}
+		case SystemInterface::Constant_ErrorIcon: {
+			return (UiConfiguration::ErrorIconSprite);
+		}
+		case SystemInterface::Constant_CountdownIcon: {
+			return (UiConfiguration::CountdownIconSprite);
+		}
+	}
+	return (-1);
+}
 
-	if (imagePath.empty ()) {
+void MainUi::setWidgetPosition (Widget *widget, float x, float y) {
+	if (x < 0) {
+		x = ((float) App::instance->windowWidth) - widget->width + x;
+	}
+	if (y < 0) {
+		y = ((float) App::instance->windowHeight) - widget->height + y;
+	}
+	widget->position.assign (x, y);
+}
+
+void MainUi::showColorFillBackground (Json *cmdInv) {
+	uint8_t r, g, b;
+
+	backgroundPanel->clear ();
+	clearWindowIdMap ();
+	r = (uint8_t) SystemInterface::instance->getCommandNumberParam (cmdInv, "fillColorR", (int) 0);
+	g = (uint8_t) SystemInterface::instance->getCommandNumberParam (cmdInv, "fillColorG", (int) 0);
+	b = (uint8_t) SystemInterface::instance->getCommandNumberParam (cmdInv, "fillColorB", (int) 0);
+	backgroundPanel->setFillBg (true, Color::fromByteValues (r, g, b));
+}
+
+void MainUi::showResourceImageBackground (Json *cmdInv) {
+	ImageWindow *image;
+	StdString path;
+
+	path = SystemInterface::instance->getCommandStringParam (cmdInv, "imagePath", StdString (""));
+	if (path.empty ()) {
+		return;
+	}
+	backgroundPanel->clear ();
+	clearWindowIdMap ();
+
+	image = (ImageWindow *) backgroundPanel->addWidget (new ImageWindow ());
+	image->setLoadResize (true, (float) App::instance->windowWidth);
+	image->setImageFilePath (path);
+}
+
+void MainUi::showFileImageBackground_imageLoaded (void *ctxPtr, Widget *widgetPtr) {
+	MainUi::BackgroundImageLoadedContext *ctx;
+	ImageWindow *image;
+	float x, y;
+
+	ctx = (BackgroundImageLoadedContext *) ctxPtr;
+	image = (ImageWindow *) widgetPtr;
+	if (! image->isLoaded ()) {
+		image->isDestroyed = true;
+	}
+	else {
+		x = 0.0f;
+		y = 0.0f;
+		if (ctx->backgroundType == SystemInterface::Constant_CenterBackground) {
+			x = ((float) App::instance->windowWidth - image->width) / 2.0f;
+			y = ((float) App::instance->windowHeight - image->height) / 2.0f;
+		}
+		image->position.assign (x, y);
+	}
+
+	ctx->ui->release ();
+	delete (ctx);
+}
+
+void MainUi::showFileImageBackground (Json *cmdInv) {
+	ImageWindow *image;
+	StdString path;
+	MainUi::BackgroundImageLoadedContext *ctx;
+
+	path = SystemInterface::instance->getCommandStringParam (cmdInv, "imagePath", StdString (""));
+	if (path.empty ()) {
+		return;
+	}
+	backgroundPanel->clear ();
+	clearWindowIdMap ();
+
+	ctx = new MainUi::BackgroundImageLoadedContext ();
+	ctx->ui = this;
+	ctx->backgroundType = SystemInterface::instance->getCommandNumberParam (cmdInv, "background", (int) 0);
+	retain ();
+	image = (ImageWindow *) backgroundPanel->addWidget (new ImageWindow ());
+	image->loadCallback = Widget::EventCallbackContext (showFileImageBackground_imageLoaded, ctx);
+	if (ctx->backgroundType == SystemInterface::Constant_StretchBackground) {
+		image->setLoadResize (true, (float) App::instance->windowWidth);
+	}
+	image->setImageFilePath (path, true);
+}
+
+void MainUi::showIconLabelWindow (Json *cmdInv) {
+	IconLabelWindow *window;
+	StdString id;
+	int icon;
+
+	icon = getIconType (SystemInterface::instance->getCommandNumberParam (cmdInv, "icon", (int) 0));
+	if (icon < 0) {
 		return;
 	}
 
-	populateBackgroundPanel ();
-	backgroundPanel->clear ();
-	image = (ImageWindow *) backgroundPanel->addWidget (new ImageWindow ());
-	image->setLoadResize (true, (float) App::instance->windowWidth);
-	image->setImageFilePath (imagePath, true);
+	window = (IconLabelWindow *) backgroundPanel->addWidget (new IconLabelWindow (UiConfiguration::instance->coreSprites.getSprite (icon), SystemInterface::instance->getCommandStringParam (cmdInv, "labelText", StdString (""))));
+	setWidgetPosition (window, SystemInterface::instance->getCommandNumberParam (cmdInv, "positionX", (float) 0.0f), SystemInterface::instance->getCommandNumberParam (cmdInv, "positionY", (float) 0.0f));
+	window->setFillBg (true, Color (1.0f, 1.0f, 1.0f));
+
+	id = SystemInterface::instance->getCommandStringParam (cmdInv, "windowId", StdString (""));
+	if (! id.empty ()) {
+		setWindowId (id, window);
+	}
+}
+
+void MainUi::showCountdownWindow (Json *cmdInv) {
+	CountdownWindow *window;
+	StdString id;
+	int icon;
+
+	icon = getIconType (SystemInterface::instance->getCommandNumberParam (cmdInv, "icon", (int) 0));
+	if (icon < 0) {
+		return;
+	}
+
+	window = (CountdownWindow *) backgroundPanel->addWidget (new CountdownWindow (UiConfiguration::instance->coreSprites.getSprite (icon), SystemInterface::instance->getCommandStringParam (cmdInv, "labelText", StdString (""))));
+	window->setDropShadow (true, UiConfiguration::instance->dropShadowColor, UiConfiguration::instance->dropShadowWidth);
+	setWidgetPosition (window, SystemInterface::instance->getCommandNumberParam (cmdInv, "positionX", (float) 0.0f), SystemInterface::instance->getCommandNumberParam (cmdInv, "positionY", (float) 0.0f));
+	window->countdown (SystemInterface::instance->getCommandNumberParam (cmdInv, "countdownTime", (int) 0));
+	window->reveal ();
+
+	id = SystemInterface::instance->getCommandStringParam (cmdInv, "windowId", StdString (""));
+	if (! id.empty ()) {
+		setWindowId (id, window);
+	}
 }

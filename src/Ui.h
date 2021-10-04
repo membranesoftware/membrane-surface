@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2020 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -127,6 +127,9 @@ protected:
 	// Execute subclass-specific actions appropriate for a received keypress event and return a boolean value indicating if the event was consumed and should no longer be processed
 	virtual bool doProcessKeyEvent (SDL_Keycode keycode, bool isShiftDown, bool isControlDown);
 
+	// Execute subclass-specific actions appropriate for a received window close event and return a boolean value indicating if the event was consumed and should no longer be processed
+	virtual bool doProcessWindowCloseEvent ();
+
 	SpriteGroup sprites;
 
 private:
@@ -135,6 +138,7 @@ private:
 
 	int refcount;
 	SDL_mutex *refcountMutex;
+	int lastWindowCloseCount;
 };
 
 #endif
