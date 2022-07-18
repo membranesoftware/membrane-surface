@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -54,31 +54,30 @@ public:
 	static const int LuaScript = 17;
 	static const int MainUi = 18;
 	static const int MathUtil = 19;
-	static const int Menu = 20;
-	static const int Network = 21;
-	static const int OsUtil = 22;
-	static const int Panel = 23;
-	static const int Position = 24;
-	static const int Prng = 25;
-	static const int ProgressBar = 26;
-	static const int Resource = 27;
-	static const int SharedBuffer = 28;
-	static const int Sprite = 29;
-	static const int SpriteGroup = 30;
-	static const int SpriteHandle = 31;
-	static const int StdString = 32;
-	static const int StringList = 33;
-	static const int SystemInterface = 34;
-	static const int TaskGroup = 35;
-	static const int TextFlow = 36;
-	static const int TooltipWindow = 37;
-	static const int Ui = 38;
-	static const int UiConfiguration = 39;
-	static const int UiStack = 40;
-	static const int UiText = 41;
-	static const int UiTextString = 42;
-	static const int Widget = 43;
-	static const int WidgetHandle = 44;
+	static const int Network = 20;
+	static const int OsUtil = 21;
+	static const int Panel = 22;
+	static const int Position = 23;
+	static const int Prng = 24;
+	static const int ProgressBar = 25;
+	static const int Resource = 26;
+	static const int SharedBuffer = 27;
+	static const int Sprite = 28;
+	static const int SpriteGroup = 29;
+	static const int SpriteHandle = 30;
+	static const int StdString = 31;
+	static const int StringList = 32;
+	static const int SystemInterface = 33;
+	static const int TaskGroup = 34;
+	static const int TextFlow = 35;
+	static const int TooltipWindow = 36;
+	static const int Ui = 37;
+	static const int UiConfiguration = 38;
+	static const int UiStack = 39;
+	static const int UiText = 40;
+	static const int UiTextString = 41;
+	static const int Widget = 42;
+	static const int WidgetHandle = 43;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -219,7 +219,7 @@ void UiStack::executeStackCommands () {
 				break;
 			}
 			result = ui->load ();
-			if (result != OsUtil::Result::Success) {
+			if (result != OsUtil::Success) {
 				Log::err ("Failed to load UI resources; err=%i", result);
 				ui->release ();
 				break;
@@ -244,7 +244,7 @@ void UiStack::executeStackCommands () {
 				break;
 			}
 			result = ui->load ();
-			if (result != OsUtil::Result::Success) {
+			if (result != OsUtil::Success) {
 				Log::err ("Failed to load UI resources; err=%i", result);
 				ui->release ();
 				break;
@@ -450,4 +450,37 @@ void UiStack::suspendMouseHover () {
 	mouseHoverClock = UiConfiguration::instance->mouseHoverThreshold;
 	isMouseHoverActive = false;
 	isMouseHoverSuspended = true;
+}
+
+bool UiStack::openWidget (const StdString &targetName) {
+	Ui *ui;
+	bool result;
+
+	result = false;
+	ui = App::instance->uiStack.getActiveUi ();
+	if (ui) {
+		result = ui->openWidget (targetName);
+		ui->release ();
+	}
+	return (result);
+}
+
+bool UiStack::inputCommand (const char *commandJson) {
+	Ui *ui;
+	Json *cmd;
+	bool result;
+
+	if (!(SystemInterface::instance->parseCommand (commandJson, &cmd))) {
+		Log::debug ("Command string parse failed; err=%s", SystemInterface::instance->lastError.c_str ());
+		return (false);
+	}
+	result = false;
+	ui = getActiveUi ();
+	if (ui) {
+		result = ui->inputCommand (cmd);
+		ui->release ();
+	}
+
+	delete (cmd);
+	return (result);
 }

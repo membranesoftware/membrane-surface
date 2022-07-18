@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@
 #include "Config.h"
 #include "SystemInterface.h"
 
-const char *SystemInterface::version = "23-stable-c19b2321";
+const char *SystemInterface::version = "25-stable-71094b9f";
 const char *SystemInterface::Command_ClearCache = "ClearCache";
 const char *SystemInterface::Command_CommandResult = "CommandResult";
 const char *SystemInterface::Command_EndSet = "EndSet";
@@ -64,6 +64,17 @@ void SystemInterface::populate () {
   commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ShowFileImageBackground"), SystemInterface::Command (106, StdString ("ShowFileImageBackground"), StdString ("ShowFileImageBackground"))));
   commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ShowIconLabelWindow"), SystemInterface::Command (216, StdString ("ShowIconLabelWindow"), StdString ("ShowIconLabelWindow"))));
   commandMap.insert (std::pair<StdString, SystemInterface::Command> (StdString ("ShowResourceImageBackground"), SystemInterface::Command (81, StdString ("ShowResourceImageBackground"), StdString ("ShowResourceImageBackground"))));
+  commandIdMap.insert (std::pair<int, StdString> (59, StdString ("ClearCache")));
+  commandIdMap.insert (std::pair<int, StdString> (0, StdString ("CommandResult")));
+  commandIdMap.insert (std::pair<int, StdString> (21, StdString ("EndSet")));
+  commandIdMap.insert (std::pair<int, StdString> (8, StdString ("GetStatus")));
+  commandIdMap.insert (std::pair<int, StdString> (215, StdString ("PlayAnimation")));
+  commandIdMap.insert (std::pair<int, StdString> (217, StdString ("RemoveWindow")));
+  commandIdMap.insert (std::pair<int, StdString> (40, StdString ("ShowColorFillBackground")));
+  commandIdMap.insert (std::pair<int, StdString> (219, StdString ("ShowCountdownWindow")));
+  commandIdMap.insert (std::pair<int, StdString> (106, StdString ("ShowFileImageBackground")));
+  commandIdMap.insert (std::pair<int, StdString> (216, StdString ("ShowIconLabelWindow")));
+  commandIdMap.insert (std::pair<int, StdString> (81, StdString ("ShowResourceImageBackground")));
   getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("AnimationCommand"), SystemInterface::getParams_AnimationCommand));
   getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("CommandResult"), SystemInterface::getParams_CommandResult));
   getParamsMap.insert (std::pair<StdString, SystemInterface::GetParamsFunction> (StdString ("EmptyObject"), SystemInterface::getParams_EmptyObject));
@@ -408,6 +419,17 @@ Json *SystemInterface::createCommand (const SystemInterface::Prefix &prefix, con
 	return (cmd);
 }
 
+Json *SystemInterface::createCommand (const SystemInterface::Prefix &prefix, int commandId, Json *commandParams) {
+	std::map<int, StdString>::iterator i;
+
+	i = commandIdMap.find (commandId);
+	if (i == commandIdMap.end ()) {
+		lastError.sprintf ("Unknown command ID %i", commandId);
+		return (NULL);
+	}
+	return (createCommand (prefix, i->second.c_str (), commandParams));
+}
+
 bool SystemInterface::setCommandAuthorization (Json *command, const StdString &authSecret, const StdString &authToken, SystemInterface::HashUpdateFunction hashUpdateFn, SystemInterface::HashDigestFunction hashDigestFn, void *hashContextPtr) {
 	StdString hash;
 	Json prefix;
@@ -424,7 +446,6 @@ bool SystemInterface::setCommandAuthorization (Json *command, const StdString &a
 			result = true;
 		}
 	}
-
 	return (result);
 }
 
@@ -436,12 +457,10 @@ StdString SystemInterface::getCommandAuthorizationHash (Json *command, const Std
 	if (! (hashUpdateFn && hashDigestFn)) {
 		return (StdString (""));
 	}
-
 	cmdname = command->getString ("commandName", "");
 	if (! getCommand (cmdname, &cmd)) {
 		return (StdString (""));
 	}
-
 	if (! command->getObject ("prefix", &prefix)) {
 		return (StdString (""));
 	}
@@ -501,7 +520,6 @@ bool SystemInterface::getCommand (const StdString &name, SystemInterface::Comman
 	if (i == commandMap.end ()) {
 		return (false);
 	}
-
 	*command = i->second;
 	return (true);
 }
@@ -513,7 +531,6 @@ bool SystemInterface::getType (const StdString &name, std::list<SystemInterface:
 	if (i == getParamsMap.end ()) {
 		return (false);
 	}
-
 	i->second (destList);
 	return (true);
 }
@@ -525,7 +542,6 @@ bool SystemInterface::populateDefaultFields (const StdString &typeName, Json *de
 	if (i == populateDefaultFieldsMap.end ()) {
 		return (false);
 	}
-
 	i->second (destObject);
 	return (true);
 }
@@ -536,12 +552,10 @@ void SystemInterface::hashFields (const StdString &typeName, Json *commandParams
 	if (! hashUpdateFn) {
 		return;
 	}
-
 	i = hashFieldsMap.find (typeName);
 	if (i == hashFieldsMap.end ()) {
 		return;
 	}
-
 	i->second (commandParams, hashUpdateFn, hashContextPtr);
 }
 
@@ -716,7 +730,6 @@ SystemInterface::Prefix SystemInterface::getCommandPrefix (Json *command) {
 	if (! command->getObject ("prefix", &prefix)) {
 		return (result);
 	}
-
 	result.agentId = prefix.getString (SystemInterface::Constant_AgentIdPrefixField, "");
 	result.userId = prefix.getString (SystemInterface::Constant_UserIdPrefixField, "");
 	result.priority = prefix.getNumber (SystemInterface::Constant_PriorityPrefixField, (int) 0);
@@ -737,7 +750,6 @@ StdString SystemInterface::getCommandStringParam (Json *command, const StdString
 	if (! command->getObject ("params", &params)) {
 		return (defaultValue);
 	}
-
 	return (params.getString (paramName, defaultValue));
 }
 
@@ -751,7 +763,6 @@ bool SystemInterface::getCommandBooleanParam (Json *command, const StdString &pa
 	if (! command->getObject ("params", &params)) {
 		return (defaultValue);
 	}
-
 	return (params.getBoolean (paramName, defaultValue));
 }
 
@@ -765,7 +776,6 @@ int SystemInterface::getCommandNumberParam (Json *command, const StdString &para
 	if (! command->getObject ("params", &params)) {
 		return (defaultValue);
 	}
-
 	return (params.getNumber (paramName, defaultValue));
 }
 
@@ -779,7 +789,6 @@ int64_t SystemInterface::getCommandNumberParam (Json *command, const StdString &
 	if (! command->getObject ("params", &params)) {
 		return (defaultValue);
 	}
-
 	return (params.getNumber (paramName, defaultValue));
 }
 
@@ -793,7 +802,6 @@ double SystemInterface::getCommandNumberParam (Json *command, const StdString &p
 	if (! command->getObject ("params", &params)) {
 		return (defaultValue);
 	}
-
 	return (params.getNumber (paramName, defaultValue));
 }
 
@@ -807,7 +815,6 @@ float SystemInterface::getCommandNumberParam (Json *command, const StdString &pa
 	if (! command->getObject ("params", &params)) {
 		return (defaultValue);
 	}
-
 	return (params.getNumber (paramName, defaultValue));
 }
 
@@ -821,7 +828,6 @@ bool SystemInterface::getCommandObjectParam (Json *command, const StdString &par
 	if (! command->getObject ("params", &params)) {
 		return (false);
 	}
-
 	return (params.getObject (paramName, destJson));
 }
 
@@ -847,7 +853,6 @@ bool SystemInterface::getCommandNumberArrayParam (Json *command, const StdString
 	for (i = 0; i < len; ++i) {
 		destList->push_back (params.getArrayNumber (paramName, i, (int) 0));
 	}
-
 	return (true);
 }
 
@@ -873,7 +878,6 @@ bool SystemInterface::getCommandNumberArrayParam (Json *command, const StdString
 	for (i = 0; i < len; ++i) {
 		destList->push_back (params.getArrayNumber (paramName, i, (int64_t) 0));
 	}
-
 	return (true);
 }
 
@@ -899,7 +903,6 @@ bool SystemInterface::getCommandNumberArrayParam (Json *command, const StdString
 	for (i = 0; i < len; ++i) {
 		destList->push_back (params.getArrayNumber (paramName, i, (double) 0.0f));
 	}
-
 	return (true);
 }
 
@@ -925,7 +928,6 @@ bool SystemInterface::getCommandNumberArrayParam (Json *command, const StdString
 	for (i = 0; i < len; ++i) {
 		destList->push_back (params.getArrayNumber (paramName, i, (float) 0.0f));
 	}
-
 	return (true);
 }
 
@@ -939,7 +941,6 @@ int SystemInterface::getCommandArrayLength (Json *command, const StdString &para
 	if (! command->getObject ("params", &params)) {
 		return (0);
 	}
-
 	return (params.getArrayLength (paramName));
 }
 
@@ -953,7 +954,6 @@ int SystemInterface::getCommandNumberArrayItem (Json *command, const StdString &
 	if (! command->getObject ("params", &params)) {
 		return (0);
 	}
-
 	return (params.getArrayNumber (paramName, index, defaultValue));
 }
 
@@ -963,7 +963,6 @@ int64_t SystemInterface::getCommandNumberArrayItem (Json *command, const StdStri
 	if (! command->getObject ("params", &params)) {
 		return (0);
 	}
-
 	return (params.getArrayNumber (paramName, index, defaultValue));
 }
 
@@ -973,7 +972,6 @@ double SystemInterface::getCommandNumberArrayItem (Json *command, const StdStrin
 	if (! command->getObject ("params", &params)) {
 		return (0);
 	}
-
 	return (params.getArrayNumber (paramName, index, defaultValue));
 }
 
@@ -983,7 +981,6 @@ float SystemInterface::getCommandNumberArrayItem (Json *command, const StdString
 	if (! command->getObject ("params", &params)) {
 		return (0);
 	}
-
 	return (params.getArrayNumber (paramName, index, defaultValue));
 }
 
@@ -993,7 +990,6 @@ StdString SystemInterface::getCommandStringArrayItem (Json *command, const StdSt
 	if (! command->getObject ("params", &params)) {
 		return (0);
 	}
-
 	return (params.getArrayString (paramName, index, defaultValue));
 }
 
@@ -1007,7 +1003,6 @@ bool SystemInterface::getCommandObjectArrayItem (Json *command, const StdString 
 	if (! command->getObject ("params", &params)) {
 		return (0);
 	}
-
 	return (params.getArrayObject (paramName, index, destJson));
 }
 

@@ -7,10 +7,14 @@ LuaScriptQuitHelpText Exit the application
 LuaScriptPrintHelpText Print any number of values to the console
 LuaScriptDofileHelpText Execute "filename" as a Lua script
 LuaScriptSleepHelpText Delay script execution
+LuaScriptProcHelpText Execute "command" as JSON interface input
+LuaScriptOpenHelpText Open the interface item with title "windowName"
+LuaScriptTimeoutHelpText Set function timeout to "milliseconds"
 LuaSyntaxErrorText Lua script parse failed (check syntax)
 LuaParseErrorText Lua script parse failed (internal error)
 LuaScriptExecutionErrorText Lua script execution failed
 EnvironmentVariables environment variables
+FunctionTimeout function timeout
 LuaScriptRunScriptHelpText Lua script that should execute on application launch
 LuaScriptMissingFunctionArgumentErrorText missing function argument
 LuaScriptEmptyStringArgumentErrorText string argument cannot be empty
@@ -26,3 +30,4 @@ Confirm confirm
 Cancel cancel
 Remove remove
 Console console
+Disabled disabled

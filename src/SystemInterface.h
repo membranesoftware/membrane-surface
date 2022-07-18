@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -79,16 +79,18 @@ public:
   static const int Constant_CenterBackground = 2;
   static const int Constant_CountdownIcon = 2;
   static const char *Constant_CreateTimePrefixField;
+  static const int Constant_DateIcon = 3;
   static const int Constant_DefaultSortOrder = 0;
   static const char *Constant_DurationPrefixField;
   static const int Constant_ErrorIcon = 1;
+  static const int Constant_FillStretchBackground = 3;
+  static const int Constant_FitStretchBackground = 1;
   static const int Constant_InfoIcon = 0;
   static const int Constant_MaxCommandPriority = 100;
   static const int Constant_NameSort = 0;
   static const int Constant_NewestSort = 1;
   static const char *Constant_PriorityPrefixField;
   static const char *Constant_StartTimePrefixField;
-  static const int Constant_StretchBackground = 1;
   static const int Constant_TopLeftBackground = 0;
   static const char *Constant_UserIdPrefixField;
   void populate ();
@@ -133,12 +135,14 @@ public:
 
 	StdString lastError;
 	std::map<StdString, SystemInterface::Command> commandMap;
+	std::map<int, StdString> commandIdMap;
 	std::map<StdString, SystemInterface::GetParamsFunction> getParamsMap;
 	std::map<StdString, SystemInterface::PopulateDefaultFieldsFunction> populateDefaultFieldsMap;
 	std::map<StdString, SystemInterface::HashFieldsFunction> hashFieldsMap;
 
 	// Return a newly created Json object containing a command item, or NULL if the command could not be created. commandParams can be NULL if not needed, causing the resulting command to contain empty parameter fields. If commandParams is not NULL, this method becomes responsible for freeing the object when it's no longer needed.
 	Json *createCommand (const SystemInterface::Prefix &prefix, const char *commandName, Json *commandParams = NULL);
+	Json *createCommand (const SystemInterface::Prefix &prefix, int commandId, Json *commandParams = NULL);
 
 	// Populate a command's authorization prefix field using the provided values and hash functions. Returns a boolean value indicating if the field was successfully generated.
 	bool setCommandAuthorization (Json *command, const StdString &authSecret, const StdString &authToken, SystemInterface::HashUpdateFunction hashUpdateFn, SystemInterface::HashDigestFunction hashDigestFn, void *hashContextPtr);

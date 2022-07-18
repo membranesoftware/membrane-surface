@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -49,25 +49,30 @@ public:
 	static const int LuaScriptPrintHelpText = 7;
 	static const int LuaScriptDofileHelpText = 8;
 	static const int LuaScriptSleepHelpText = 9;
-	static const int LuaSyntaxErrorText = 10;
-	static const int LuaParseErrorText = 11;
-	static const int LuaScriptExecutionErrorText = 12;
-	static const int EnvironmentVariables = 13;
-	static const int LuaScriptRunScriptHelpText = 14;
-	static const int LuaScriptMissingFunctionArgumentErrorText = 15;
-	static const int LuaScriptEmptyStringArgumentErrorText = 16;
-	static const int LuaScriptLoadScriptErrorText = 17;
-	static const int LuaScriptLoadScriptFileErrorText = 18;
-	static const int LuaScriptLoadScriptSyntaxErrorText = 19;
-	static const int LuaScriptLoadScriptExecutionErrorText = 20;
-	static const int Ok = 21;
-	static const int Yes = 22;
-	static const int No = 23;
-	static const int ShuttingDown = 24;
-	static const int Confirm = 25;
-	static const int Cancel = 26;
-	static const int Remove = 27;
-	static const int Console = 28;
+	static const int LuaScriptProcHelpText = 10;
+	static const int LuaScriptOpenHelpText = 11;
+	static const int LuaScriptTimeoutHelpText = 12;
+	static const int LuaSyntaxErrorText = 13;
+	static const int LuaParseErrorText = 14;
+	static const int LuaScriptExecutionErrorText = 15;
+	static const int EnvironmentVariables = 16;
+	static const int FunctionTimeout = 17;
+	static const int LuaScriptRunScriptHelpText = 18;
+	static const int LuaScriptMissingFunctionArgumentErrorText = 19;
+	static const int LuaScriptEmptyStringArgumentErrorText = 20;
+	static const int LuaScriptLoadScriptErrorText = 21;
+	static const int LuaScriptLoadScriptFileErrorText = 22;
+	static const int LuaScriptLoadScriptSyntaxErrorText = 23;
+	static const int LuaScriptLoadScriptExecutionErrorText = 24;
+	static const int Ok = 25;
+	static const int Yes = 26;
+	static const int No = 27;
+	static const int ShuttingDown = 28;
+	static const int Confirm = 29;
+	static const int Cancel = 30;
+	static const int Remove = 31;
+	static const int Console = 32;
+	static const int Disabled = 33;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -34,6 +34,7 @@
 
 #include "SDL2/SDL.h"
 #include "StdString.h"
+#include "OsUtil.h"
 #include "Color.h"
 #include "Font.h"
 #include "SpriteGroup.h"
@@ -42,51 +43,10 @@ class UiConfiguration {
 public:
 	// Indexes in the coreSprites group
 	enum {
-		OkButtonSprite = 0,
-		CancelButtonSprite = 1,
-		EnterTextButtonSprite = 2,
-		RandomizeButtonSprite = 3,
-		SettingsButtonSprite = 4,
-		ExitButtonSprite = 5,
-		MainMenuButtonSprite = 6,
-		BackButtonSprite = 7,
-		NewsButtonSprite = 8,
-		DeleteButtonSprite = 9,
-		HelpButtonSprite = 10,
-		PasteButtonSprite = 11,
-		ImageButtonSprite = 12,
-		NetworkConnectIconSprite = 13,
-		NetworkDisconnectIconSprite = 14,
-		CheckmarkSprite = 15,
-		ScrollUpArrowSprite = 16,
-		ScrollDownArrowSprite = 17,
-		TaskInProgressIconSprite = 18,
-		TaskCompleteIconSprite = 19,
-		InfoIconSprite = 20,
-		WebLinkIconSprite = 21,
-		ToggleCheckboxSprite = 22,
-		ToggleCheckboxOutlineSprite = 23,
-		ToggleCheckboxIndeterminateSprite = 24,
-		UpdateButtonSprite = 25,
-		FeedbackButtonSprite = 26,
-		StarButtonSprite = 27,
-		StarOutlineButtonSprite = 28,
-		StarHalfButtonSprite = 29,
-		ClearButtonSprite = 30,
-		ReloadButtonSprite = 31,
-		RenameButtonSprite = 32,
-		ErrorIconSprite = 33,
-		AboutButtonSprite = 34,
-		ExpandLessButtonSprite = 35,
-		ExpandMoreButtonSprite = 36,
-		ConfigurationIconSprite = 37,
-		LoadingImageIconSprite = 38,
-		KeyIconSprite = 39,
-		AddButtonSprite = 40,
-		VisibilityOnButtonSprite = 41,
-		VisibilityOffButtonSprite = 42,
-		ConsoleIconSprite = 43,
-		CountdownIconSprite = 44
+		InfoIconSprite = 0,
+		ErrorIconSprite = 1,
+		CountdownIconSprite = 2,
+		DateIconSprite = 3
 	};
 
 	// Sprite frame indexes
@@ -116,7 +76,7 @@ public:
 	static UiConfiguration *instance;
 
 	// Load resources referenced by the UiConfiguration and return a result value
-	int load (float fontScale = 1.0f);
+	OsUtil::Result load (float fontScale = 1.0f);
 
 	// Free resources allocated by any previous load operation
 	void unload ();
@@ -137,6 +97,7 @@ public:
 	int mouseHoverThreshold;
 	int blinkDuration; // ms
 	int backgroundCrossFadeDuration; // ms
+	int activityIconLingerDuration; // ms
 	StdString fontNames[UiConfiguration::FontCount];
 	int fontBaseSizes[UiConfiguration::FontCount];
 	int fontSizes[UiConfiguration::FontCount];
@@ -160,10 +121,12 @@ public:
 	Color flatButtonTextColor;
 	Color linkTextColor;
 	Color errorTextColor;
+	Color warningTextColor;
 	Color statusOkTextColor;
 	Color raisedButtonTextColor;
 	Color raisedButtonInverseTextColor;
 	Color raisedButtonBackgroundColor;
+	Color raisedButtonInverseBackgroundColor;
 	Color dropShadowColor;
 	float dropShadowWidth;
 	Color dividerColor;

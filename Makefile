@@ -54,7 +54,6 @@ O=App.o \
 	Main.o \
 	MainUi.o \
 	MathUtil.o \
-	Menu.o \
 	Network.o \
 	OsUtil.o \
 	Panel.o \

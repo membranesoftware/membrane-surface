@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -77,6 +77,12 @@ public:
 
 	// Deactivate the mouse hover widget and prevent reactivation until a new mouse hover widget is acquired
 	void suspendMouseHover ();
+
+	// Execute an interface action to open the named widget from the active Ui and return a boolean value indicating if the widget was found
+	bool openWidget (const StdString &targetName);
+
+	// Execute commandJson as a SystemInterface command in the active UI and return a boolean value indicating if the attempt succeeded
+	bool inputCommand (const char *commandJson);
 
 private:
 	// Stack command types

@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,6 @@
 #include "Config.h"
 #include <stdlib.h>
 #include "App.h"
-#include "Log.h"
 #include "StdString.h"
 #include "OsUtil.h"
 #include "Resource.h"
@@ -60,7 +59,7 @@ OsUtil::Result UiText::load (const StdString &language) {
 		buffer = App::instance->resource.loadFile (path);
 	}
 	if (! buffer) {
-		return (OsUtil::Result::FileOpenFailedError);
+		return (OsUtil::FileOpenFailedError);
 	}
 
 	text.assignBuffer (buffer);
@@ -80,7 +79,7 @@ OsUtil::Result UiText::load (const StdString &language) {
 	}
 
 	App::instance->resource.unloadFile (path);
-	return (OsUtil::Result::Success);
+	return (OsUtil::Success);
 }
 
 StdString UiText::getText (int stringIndex) {

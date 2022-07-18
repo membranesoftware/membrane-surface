@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -69,7 +69,7 @@ Sprite *Sprite::copy () {
 			break;
 		}
 		result = sprite->addTexture (texture, i->loadPath);
-		if (result != OsUtil::Result::Success) {
+		if (result != OsUtil::Success) {
 			resource->unloadTexture (i->loadPath);
 			delete (sprite);
 			sprite = NULL;
@@ -88,7 +88,7 @@ OsUtil::Result Sprite::load (const StdString &path, int imageScale) {
 	int i;
 	bool found;
 
-	result = OsUtil::Result::Success;
+	result = OsUtil::Success;
 	resource = &(App::instance->resource);
 	i = 0;
 	maxWidth = 0;
@@ -113,11 +113,11 @@ OsUtil::Result Sprite::load (const StdString &path, int imageScale) {
 		}
 		texture = resource->loadTexture (loadpath);
 		if (! texture) {
-			result = OsUtil::Result::SdlOperationFailedError;
+			result = OsUtil::SdlOperationFailedError;
 			break;
 		}
 		result = addTexture (texture, loadpath);
-		if (result != OsUtil::Result::Success) {
+		if (result != OsUtil::Success) {
 			resource->unloadTexture (loadpath);
 			break;
 		}
@@ -134,7 +134,7 @@ OsUtil::Result Sprite::addTexture (SDL_Texture *texture, const StdString &loadPa
 	item.loadPath.assign (loadPath);
 	if (SDL_QueryTexture (item.texture, NULL, NULL, &(item.width), &(item.height)) != 0) {
 		Log::err ("Failed to query sprite texture; path=\"%s\" err=\"%s\"", item.loadPath.c_str (), SDL_GetError ());
-		return (OsUtil::Result::SdlOperationFailedError);
+		return (OsUtil::SdlOperationFailedError);
 	}
 	textureList.push_back (item);
 	frameCount = (int) textureList.size ();
@@ -144,7 +144,7 @@ OsUtil::Result Sprite::addTexture (SDL_Texture *texture, const StdString &loadPa
 	if (item.height > maxHeight) {
 		maxHeight = item.height;
 	}
-	return (OsUtil::Result::Success);
+	return (OsUtil::Success);
 }
 
 void Sprite::unload () {

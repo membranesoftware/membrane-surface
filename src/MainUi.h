@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -47,9 +47,12 @@ public:
 	MainUi ();
 	~MainUi ();
 
+	// Execute cmdInv as a SystemInterface command and return a boolean value indicating if the attempt succeeded
+	bool inputCommand (Json *cmdInv);
+
 protected:
 	// Load subclass-specific resources and return a result value
-	int doLoad ();
+	OsUtil::Result doLoad ();
 
 	// Unload subclass-specific resources
 	void doUnload ();
@@ -58,8 +61,8 @@ protected:
 	void doUpdate (int msElapsed);
 
 private:
-	// Execute cmdInv as a surface command. If the command is PlayAnimation, execute it only if allowPlayAnimation is true.
-	void executeCommand (Json *cmdInv, bool allowPlayAnimation = false);
+	// Execute cmdInv as a surface command and return a boolean value indicating if the command was accepted. If the command is PlayAnimation, execute it only if allowPlayAnimation is true.
+	bool executeCommand (Json *cmdInv, bool allowPlayAnimation = false);
 	void removeWindow (Json *cmdInv);
 	void playAnimation (Json *cmdInv);
 	void showColorFillBackground (Json *cmdInv);

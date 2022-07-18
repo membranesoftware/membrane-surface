@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -90,13 +90,13 @@ public:
 	Resource resource;
 	Network network;
 	SystemInterface systemInterface;
-	bool isConsole;
-	bool shouldRefreshUi;
-	bool isInterfaceAnimationEnabled;
+	StdString prefsPath;
 	float nextFontScale;
 	int nextWindowWidth;
 	int nextWindowHeight;
-	StdString prefsPath;
+	bool isConsole;
+	bool shouldRefreshUi;
+	bool isInterfaceAnimationEnabled;
 
 	// Read-only data members
 	bool isShuttingDown;
@@ -161,7 +161,9 @@ public:
 	struct RenderTaskContext {
 		RenderTaskFunction fn;
 		void *fnData;
-		RenderTaskContext (): fn (NULL), fnData (NULL) { }
+		RenderTaskContext ():
+			fn (NULL),
+			fnData (NULL) { }
 	};
 	// Schedule a task function to execute at the top of the next render loop
 	void addRenderTask (RenderTaskFunction fn, void *fnData);

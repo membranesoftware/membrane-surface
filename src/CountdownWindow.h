@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -41,7 +41,7 @@
 class CountdownWindow : public Panel {
 public:
 	CountdownWindow (Sprite *iconSprite, const StdString &labelText = StdString (""), UiConfiguration::FontType labelTextFontType = UiConfiguration::BodyFont);
- 	virtual ~CountdownWindow ();
+	virtual ~CountdownWindow ();
 
 	// Read-only data members
 	bool isRightAligned;

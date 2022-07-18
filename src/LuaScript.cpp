@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -37,10 +37,15 @@ extern "C" {
 }
 #include "SDL2/SDL.h"
 #include "App.h"
-#include "OsUtil.h"
 #include "Log.h"
+#include "StdString.h"
+#include "OsUtil.h"
 #include "UiText.h"
+#include "UiStack.h"
 #include "LuaScript.h"
+
+int LuaScript::scriptTimeout = 7000; // ms
+const int LuaScript::scriptWait = 100; // ms
 
 const LuaScript::Function LuaFunctions[] = {
 	{
@@ -72,6 +77,24 @@ const LuaScript::Function LuaFunctions[] = {
 		"dofile",
 		"(filename)",
 		UiTextString::LuaScriptDofileHelpText
+	},
+	{
+		LuaScript::open,
+		"open",
+		"(windowName)",
+		UiTextString::LuaScriptOpenHelpText
+	},
+	{
+		LuaScript::timeout,
+		"timeout",
+		"(milliseconds)",
+		UiTextString::LuaScriptTimeoutHelpText
+	},
+	{
+		LuaScript::proc,
+		"proc",
+		"(command)",
+		UiTextString::LuaScriptProcHelpText
 	}
 };
 const int LuaFunctionCount = sizeof (LuaFunctions) / sizeof (LuaScript::Function);
@@ -103,22 +126,22 @@ void LuaScript::run (void *luaScriptPtr) {
 	lua = (LuaScript *) luaScriptPtr;
 	result = luaL_loadstring (lua->state, lua->script.c_str ());
 	if (result == LUA_ERRSYNTAX) {
-		lua->runResult = OsUtil::Result::MalformedDataError;
+		lua->runResult = OsUtil::MalformedDataError;
 		Log::printf ("%s", UiText::instance->getText (UiTextString::LuaSyntaxErrorText).c_str ());
 	}
 	else if (result != LUA_OK) {
-		lua->runResult = OsUtil::Result::LuaOperationFailedError;
+		lua->runResult = OsUtil::LuaOperationFailedError;
 		Log::printf ("%s", UiText::instance->getText (UiTextString::LuaParseErrorText).c_str ());
 	}
 	else {
 		result = lua_pcall (lua->state, 0, 0, 0);
 		if (result != 0) {
 			lua->runErrorText.assign (lua_tostring (lua->state, -1));
-			lua->runResult = OsUtil::Result::LuaOperationFailedError;
+			lua->runResult = OsUtil::LuaOperationFailedError;
 			Log::printf ("%s; %s", UiText::instance->getText (UiTextString::LuaScriptExecutionErrorText).c_str (), lua->runErrorText.c_str ());
 		}
 		else {
-			lua->runResult = OsUtil::Result::Success;
+			lua->runResult = OsUtil::Success;
 		}
 	}
 
@@ -151,6 +174,12 @@ int LuaScript::help (lua_State *L) {
 		++fi;
 	}
 	Log::printf (" ");
+	if (LuaScript::scriptTimeout > 0) {
+		Log::printf ("* %s: %ims", UiText::instance->getText (UiTextString::FunctionTimeout).capitalized ().c_str (), LuaScript::scriptTimeout);
+	}
+	else {
+		Log::printf ("* %s: %s", UiText::instance->getText (UiTextString::FunctionTimeout).capitalized ().c_str (), UiText::instance->getText (UiTextString::Disabled).c_str ());
+	}
 	Log::printf ("* %s", UiText::instance->getText (UiTextString::EnvironmentVariables).capitalized ().c_str ());
 	format.sprintf ("%%-%is%%s", maxw);
 	Log::printf (format.c_str (), "RUN_SCRIPT", UiText::instance->getText (UiTextString::LuaScriptRunScriptHelpText).c_str ());
@@ -269,10 +298,77 @@ int LuaScript::sleep (lua_State *L) {
 	if (ms <= 0) {
 		return (0);
 	}
-	if (App::instance->isShutdown) {
+	if (App::instance->isShutdown || App::instance->isShuttingDown) {
 		snprintf (buf, sizeof (buf), "%s", UiText::instance->getText (UiTextString::ShuttingDown).c_str ());
 		return (luaL_error (L, "%s", buf));
 	}
 	SDL_Delay (ms);
+	return (0);
+}
+
+bool LuaScript::awaitResult (LuaScript::AwaitResultFn fn, void *fnData) {
+	int64_t tmax;
+	bool result;
+
+	result = false;
+	tmax = OsUtil::getTime () + LuaScript::scriptTimeout;
+	while (! result) {
+		result = fn (fnData);
+		if (result) {
+			return (true);
+		}
+		if (LuaScript::scriptTimeout <= 0) {
+			break;
+		}
+		SDL_Delay (LuaScript::scriptWait);
+		if (App::instance->isShutdown || App::instance->isShuttingDown || (OsUtil::getTime () >= tmax)) {
+			break;
+		}
+	}
+	return (false);
+}
+
+static bool awaitResult_proc (void *data) {
+	return (App::instance->uiStack.inputCommand ((char *) data));
+}
+int LuaScript::proc (lua_State *L) {
+	char *cmd, buf[1024];
+	bool result;
+
+	LuaScript::argvString (L, 1, &cmd);
+	result = LuaScript::awaitResult (awaitResult_proc, cmd);
+	if (! result) {
+		snprintf (buf, sizeof (buf), "proc: failed to execute command string");
+		return (luaL_error (L, "%s", buf));
+	}
+	return (0);
+}
+
+static bool awaitResult_open (void *data) {
+	return (App::instance->uiStack.openWidget (StdString ((char *) data)));
+}
+int LuaScript::open (lua_State *L) {
+	char *name, buf[1024];
+	bool result;
+
+	LuaScript::argvString (L, 1, &name);
+	result = LuaScript::awaitResult (awaitResult_open, name);
+	if (! result) {
+		snprintf (buf, sizeof (buf), "open: window not found; windowName=\"%s\"", name);
+		return (luaL_error (L, "%s", buf));
+	}
+	return (0);
+}
+
+int LuaScript::timeout (lua_State *L) {
+	char buf[1024];
+	int ms;
+
+	LuaScript::argvInteger (L, 1, &ms);
+	if (ms < 0) {
+		snprintf (buf, sizeof (buf), "milliseconds must be 0 or greater (0 disables timeout)");
+		return (luaL_error (L, "%s", buf));
+	}
+	LuaScript::scriptTimeout = ms;
 	return (0);
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -34,6 +34,7 @@
 
 #include "SDL2/SDL.h"
 #include "StdString.h"
+#include "OsUtil.h"
 #include "Widget.h"
 #include "WidgetHandle.h"
 #include "Panel.h"
@@ -58,16 +59,13 @@ public:
 	void release ();
 
 	// Load resources as needed to prepare the UI and return a result value
-	int load ();
+	OsUtil::Result load ();
 
 	// Free resources allocated by any previous load operation
 	void unload ();
 
 	// Remove and destroy any popup widgets that have been created by the UI
 	void clearPopupWidgets ();
-
-	// Show the application shutdown window and disable further user interaction with UI widgets
-	void showShutdownWindow ();
 
 	// Reset interface elements as appropriate when the UI becomes active
 	void resume ();
@@ -90,6 +88,12 @@ public:
 	// Add a widget to the UI. Returns the widget pointer.
 	Widget *addWidget (Widget *widget, float positionX = 0.0f, float positionY = 0.0f, int zLevel = 0);
 
+	// Execute an interface action to open the named widget and return a boolean value indicating if the widget was found
+	virtual bool openWidget (const StdString &targetName);
+
+	// Execute cmdInv as a SystemInterface command and return a boolean value indicating if the attempt succeeded
+	virtual bool inputCommand (Json *cmdInv);
+
 	// Execute actions appropriate for a received keypress event and return a boolean value indicating if the event was consumed and should no longer be processed
 	bool processKeyEvent (SDL_Keycode keycode, bool isShiftDown, bool isControlDown);
 
@@ -98,7 +102,7 @@ protected:
 	virtual StdString getSpritePath ();
 
 	// Load subclass-specific resources and return a result value
-	virtual int doLoad ();
+	virtual OsUtil::Result doLoad ();
 
 	// Unload subclass-specific resources
 	virtual void doUnload ();

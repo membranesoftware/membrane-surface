@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,6 @@
 #include <string.h>
 #include "SDL2/SDL.h"
 #include "OsUtil.h"
-#include "Log.h"
 #include "StdString.h"
 #include "App.h"
 #include "Resource.h"
@@ -51,6 +50,7 @@ UiConfiguration::UiConfiguration ()
 , mouseHoverThreshold (1000)
 , blinkDuration (486)
 , backgroundCrossFadeDuration (140)
+, activityIconLingerDuration (1200)
 , lightPrimaryColor (Color::getByteValue (0x51), Color::getByteValue (0x4A), Color::getByteValue (0xAC))
 , mediumPrimaryColor (Color::getByteValue (0x18), Color::getByteValue (0x22), Color::getByteValue (0x7C))
 , darkPrimaryColor (Color::getByteValue (0x00), Color::getByteValue (0x00), Color::getByteValue (0x4F))
@@ -70,10 +70,12 @@ UiConfiguration::UiConfiguration ()
 , flatButtonTextColor (Color::getByteValue (0x18), Color::getByteValue (0x22), Color::getByteValue (0x7C))
 , linkTextColor (Color::getByteValue (0x18), Color::getByteValue (0x22), Color::getByteValue (0x7C))
 , errorTextColor (Color::getByteValue (0xB0), Color::getByteValue (0x00), Color::getByteValue (0x20))
+, warningTextColor (Color::getByteValue (0xB5), Color::getByteValue (0x76), Color::getByteValue (0x0F))
 , statusOkTextColor (Color::getByteValue (0x10), Color::getByteValue (0x8D), Color::getByteValue (0x10))
 , raisedButtonTextColor (Color::getByteValue (0x18), Color::getByteValue (0x22), Color::getByteValue (0x7C))
 , raisedButtonInverseTextColor (Color::getByteValue (0x51), Color::getByteValue (0x4A), Color::getByteValue (0xAC))
 , raisedButtonBackgroundColor (Color::getByteValue (0xD0), Color::getByteValue (0xD0), Color::getByteValue (0xD0))
+, raisedButtonInverseBackgroundColor (Color::getByteValue (0x0D), Color::getByteValue (0x0D), Color::getByteValue (0x2A))
 , dropShadowColor (0.0f, 0.0f, 0.0f, 0.78f)
 , dropShadowWidth (2.0f)
 , dividerColor (0.0f, 0.0f, 0.0f, 0.14f)
@@ -147,16 +149,17 @@ UiConfiguration::~UiConfiguration () {
 	unload ();
 }
 
-int UiConfiguration::load (float fontScale) {
+OsUtil::Result UiConfiguration::load (float fontScale) {
 	Resource *resource;
 	Font *font;
-	int i, result, sz;
+	int i, sz;
+	OsUtil::Result result;
 
 	if (fontScale <= 0.0f) {
-		return (OsUtil::Result::InvalidParamError);
+		return (OsUtil::InvalidParamError);
 	}
 	if (isLoaded) {
-		return (OsUtil::Result::Success);
+		return (OsUtil::Success);
 	}
 	resource = &(App::instance->resource);
 
@@ -167,7 +170,7 @@ int UiConfiguration::load (float fontScale) {
 		}
 		font = resource->loadFont (fontNames[i], sz);
 		if (! font) {
-			return (OsUtil::Result::FreetypeOperationFailedError);
+			return (OsUtil::FreetypeOperationFailedError);
 		}
 		fonts[i] = font;
 		fontSizes[i] = sz;
@@ -175,12 +178,12 @@ int UiConfiguration::load (float fontScale) {
 
 	if (! coreSpritesPath.empty ()) {
 		result = coreSprites.load (coreSpritesPath);
-		if (result != OsUtil::Result::Success) {
+		if (result != OsUtil::Success) {
 			return (result);
 		}
 	}
 	isLoaded = true;
-	return (OsUtil::Result::Success);
+	return (OsUtil::Success);
 }
 
 void UiConfiguration::unload () {
@@ -206,7 +209,7 @@ int UiConfiguration::reloadFonts (float fontScale) {
 	int i, sz;
 
 	if (fontScale <= 0.0f) {
-		return (OsUtil::Result::InvalidParamError);
+		return (OsUtil::InvalidParamError);
 	}
 	resource = &(App::instance->resource);
 
@@ -217,7 +220,7 @@ int UiConfiguration::reloadFonts (float fontScale) {
 		}
 		font = resource->loadFont (fontNames[i], sz);
 		if (! font) {
-			return (OsUtil::Result::FreetypeOperationFailedError);
+			return (OsUtil::FreetypeOperationFailedError);
 		}
 		if (fonts[i]) {
 			resource->unloadFont (fontNames[i], fontSizes[i]);
@@ -225,9 +228,7 @@ int UiConfiguration::reloadFonts (float fontScale) {
 		fonts[i] = font;
 		fontSizes[i] = sz;
 	}
-	Log::debug ("Fonts reloaded; fontScale=%.2f captionFontSize=%i bodyFontSize=%i buttonFontSize=%i titleFontSize=%i headlineFontSize=%i consoleFontSize=%i", fontScale, fontSizes[UiConfiguration::CaptionFont], fontSizes[UiConfiguration::BodyFont], fontSizes[UiConfiguration::ButtonFont], fontSizes[UiConfiguration::TitleFont], fontSizes[UiConfiguration::HeadlineFont], fontSizes[UiConfiguration::ConsoleFont]);
-
-	return (OsUtil::Result::Success);
+	return (OsUtil::Success);
 }
 
 void UiConfiguration::resetScale () {

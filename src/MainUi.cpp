@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,6 @@
 #include <sys/select.h>
 #include <list>
 #include "StdString.h"
-#include "Log.h"
 #include "App.h"
 #include "Label.h"
 #include "Image.h"
@@ -41,6 +40,7 @@
 #include "Ui.h"
 #include "Buffer.h"
 #include "OsUtil.h"
+#include "SystemInterface.h"
 #include "Json.h"
 #include "Color.h"
 #include "Panel.h"
@@ -112,7 +112,7 @@ void MainUi::setWindowId (const StdString &windowId, Widget *widget) {
 	}
 }
 
-int MainUi::doLoad () {
+OsUtil::Result MainUi::doLoad () {
 	StdString path;
 	ImageWindow *image;
 	MainUi::BackgroundImageLoadedContext *ctx;
@@ -127,15 +127,23 @@ int MainUi::doLoad () {
 		ctx->ui = this;
 		ctx->backgroundType = OsUtil::getEnvValue ("BACKGROUND_IMAGE_TYPE", (int) 0);
 		retain ();
+
 		image = (ImageWindow *) backgroundPanel->addWidget (new ImageWindow ());
 		image->loadCallback = Widget::EventCallbackContext (showFileImageBackground_imageLoaded, ctx);
-		if (ctx->backgroundType == SystemInterface::Constant_StretchBackground) {
-			image->setLoadResize (true, (float) App::instance->windowWidth);
+		switch (ctx->backgroundType) {
+			case SystemInterface::Constant_FitStretchBackground: {
+				image->onLoadFit ((float) App::instance->windowWidth, (float) App::instance->windowHeight);
+				break;
+			}
+			case SystemInterface::Constant_FillStretchBackground: {
+				image->onLoadScale ((float) App::instance->windowWidth, (float) App::instance->windowHeight);
+				break;
+			}
 		}
 		image->setImageFilePath (path, true);
 	}
 
-	return (OsUtil::Result::Success);
+	return (OsUtil::Success);
 }
 
 void MainUi::doUnload () {
@@ -145,10 +153,12 @@ void MainUi::doUnload () {
 void MainUi::doUpdate (int msElapsed) {
 	StdString s;
 	Json *cmd;
+	SystemInterface::Prefix prefix;
 	fd_set rfds;
 	struct timeval tv;
 	char buf[8192];
 	int len;
+	bool result;
 
 	while (true) {
 		FD_ZERO (&rfds);
@@ -185,46 +195,57 @@ void MainUi::doUpdate (int msElapsed) {
 		}
 
 		commandBuffer.reset ();
-		executeCommand (cmd, true);
+		result = executeCommand (cmd, true);
+		delete (cmd);
+
+		prefix.createTime = OsUtil::getTime ();
+		cmd = SystemInterface::instance->createCommand (prefix, SystemInterface::CommandId_CommandResult, (new Json ())->set ("success", result));
+		Log::printf ("%s", cmd->toString ().c_str ());
 		delete (cmd);
 	}
 
 	updateAnimation (msElapsed);
 }
 
-void MainUi::executeCommand (Json *cmdInv, bool allowPlayAnimation) {
+bool MainUi::inputCommand (Json *cmdInv) {
+	return (executeCommand (cmdInv, true));
+}
+
+bool MainUi::executeCommand (Json *cmdInv, bool allowPlayAnimation) {
 	switch (SystemInterface::instance->getCommandId (cmdInv)) {
 		case SystemInterface::CommandId_RemoveWindow: {
 			removeWindow (cmdInv);
-			break;
+			return (true);
 		}
 		case SystemInterface::CommandId_PlayAnimation: {
 			if (allowPlayAnimation) {
 				playAnimation (cmdInv);
+				return (true);
 			}
 			break;
 		}
 		case SystemInterface::CommandId_ShowColorFillBackground: {
 			showColorFillBackground (cmdInv);
-			break;
+			return (true);
 		}
 		case SystemInterface::CommandId_ShowResourceImageBackground: {
 			showResourceImageBackground (cmdInv);
-			break;
+			return (true);
 		}
 		case SystemInterface::CommandId_ShowFileImageBackground: {
 			showFileImageBackground (cmdInv);
-			break;
+			return (true);
 		}
 		case SystemInterface::CommandId_ShowIconLabelWindow: {
 			showIconLabelWindow (cmdInv);
-			break;
+			return (true);
 		}
 		case SystemInterface::CommandId_ShowCountdownWindow: {
 			showCountdownWindow (cmdInv);
-			break;
+			return (true);
 		}
 	}
+	return (false);
 }
 
 void MainUi::removeWindow (Json *cmdInv) {
@@ -315,6 +336,9 @@ int MainUi::getIconType (int icon) {
 		case SystemInterface::Constant_CountdownIcon: {
 			return (UiConfiguration::CountdownIconSprite);
 		}
+		case SystemInterface::Constant_DateIcon: {
+			return (UiConfiguration::DateIconSprite);
+		}
 	}
 	return (-1);
 }
@@ -352,7 +376,7 @@ void MainUi::showResourceImageBackground (Json *cmdInv) {
 	clearWindowIdMap ();
 
 	image = (ImageWindow *) backgroundPanel->addWidget (new ImageWindow ());
-	image->setLoadResize (true, (float) App::instance->windowWidth);
+	image->onLoadFit ((float) App::instance->windowWidth, (float) App::instance->windowHeight);
 	image->setImageFilePath (path);
 }
 
@@ -369,9 +393,14 @@ void MainUi::showFileImageBackground_imageLoaded (void *ctxPtr, Widget *widgetPt
 	else {
 		x = 0.0f;
 		y = 0.0f;
-		if (ctx->backgroundType == SystemInterface::Constant_CenterBackground) {
-			x = ((float) App::instance->windowWidth - image->width) / 2.0f;
-			y = ((float) App::instance->windowHeight - image->height) / 2.0f;
+		switch (ctx->backgroundType) {
+			case SystemInterface::Constant_CenterBackground:
+			case SystemInterface::Constant_FitStretchBackground:
+			case SystemInterface::Constant_FillStretchBackground: {
+				x = ((float) App::instance->windowWidth - image->width) / 2.0f;
+				y = ((float) App::instance->windowHeight - image->height) / 2.0f;
+				break;
+			}
 		}
 		image->position.assign (x, y);
 	}
@@ -398,8 +427,15 @@ void MainUi::showFileImageBackground (Json *cmdInv) {
 	retain ();
 	image = (ImageWindow *) backgroundPanel->addWidget (new ImageWindow ());
 	image->loadCallback = Widget::EventCallbackContext (showFileImageBackground_imageLoaded, ctx);
-	if (ctx->backgroundType == SystemInterface::Constant_StretchBackground) {
-		image->setLoadResize (true, (float) App::instance->windowWidth);
+	switch (ctx->backgroundType) {
+		case SystemInterface::Constant_FitStretchBackground: {
+			image->onLoadFit ((float) App::instance->windowWidth, (float) App::instance->windowHeight);
+			break;
+		}
+		case SystemInterface::Constant_FillStretchBackground: {
+			image->onLoadScale ((float) App::instance->windowWidth, (float) App::instance->windowHeight);
+			break;
+		}
 	}
 	image->setImageFilePath (path, true);
 }
@@ -413,7 +449,6 @@ void MainUi::showIconLabelWindow (Json *cmdInv) {
 	if (icon < 0) {
 		return;
 	}
-
 	window = (IconLabelWindow *) backgroundPanel->addWidget (new IconLabelWindow (UiConfiguration::instance->coreSprites.getSprite (icon), SystemInterface::instance->getCommandStringParam (cmdInv, "labelText", StdString (""))));
 	setWidgetPosition (window, SystemInterface::instance->getCommandNumberParam (cmdInv, "positionX", (float) 0.0f), SystemInterface::instance->getCommandNumberParam (cmdInv, "positionY", (float) 0.0f));
 	window->setFillBg (true, Color (1.0f, 1.0f, 1.0f));
@@ -433,7 +468,6 @@ void MainUi::showCountdownWindow (Json *cmdInv) {
 	if (icon < 0) {
 		return;
 	}
-
 	window = (CountdownWindow *) backgroundPanel->addWidget (new CountdownWindow (UiConfiguration::instance->coreSprites.getSprite (icon), SystemInterface::instance->getCommandStringParam (cmdInv, "labelText", StdString (""))));
 	window->setDropShadow (true, UiConfiguration::instance->dropShadowColor, UiConfiguration::instance->dropShadowWidth);
 	setWidgetPosition (window, SystemInterface::instance->getCommandNumberParam (cmdInv, "positionX", (float) 0.0f), SystemInterface::instance->getCommandNumberParam (cmdInv, "positionY", (float) 0.0f));

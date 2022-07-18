@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -111,12 +111,12 @@ void App::freeInstance () {
 }
 
 App::App ()
-: isConsole (false)
-, shouldRefreshUi (false)
-, isInterfaceAnimationEnabled (false)
-, nextFontScale (1.0f)
+: nextFontScale (1.0f)
 , nextWindowWidth (0)
 , nextWindowHeight (0)
+, isConsole (false)
+, shouldRefreshUi (false)
+, isInterfaceAnimationEnabled (false)
 , isShuttingDown (false)
 , isShutdown (false)
 , startTime (0)
@@ -234,7 +234,7 @@ void App::init () {
 		path = OsUtil::getUserDataPath ();
 		if (! path.empty ()) {
 			result = OsUtil::createDirectory (path);
-			if (result != OsUtil::Result::Success) {
+			if (result != OsUtil::Success) {
 				Log::warning ("Application data cannot be saved (failed to create directory); path=\"%s\" err=%i", path.c_str (), result);
 			}
 		}
@@ -288,7 +288,7 @@ int App::run () {
 	}
 	else {
 		result = prefsMap.read (prefsPath, true);
-		if (result != OsUtil::Result::Success) {
+		if (result != OsUtil::Success) {
 			Log::debug ("Failed to read preferences file; prefsPath=\"%s\" err=%i", prefsPath.c_str (), result);
 			prefsMap.clear ();
 		}
@@ -296,18 +296,18 @@ int App::run () {
 	isHttpsEnabled = prefsMap.find (App::HttpsKey, true);
 
 	result = resource.open ();
-	if (result != OsUtil::Result::Success) {
+	if (result != OsUtil::Success) {
 		Log::err ("Failed to open application resources; err=%i", result);
 		return (result);
 	}
 	result = uiText.load (OsUtil::getEnvLanguage (UiText::DefaultLanguage));
-	if (result != OsUtil::Result::Success) {
+	if (result != OsUtil::Success) {
 		Log::err ("Failed to load text resources; err=%i", result);
 		return (result);
 	}
 	network.maxRequestThreads = prefsMap.find (App::NetworkThreadsKey, Network::DefaultMaxRequestThreads);
 	result = network.start ();
-	if (result != OsUtil::Result::Success) {
+	if (result != OsUtil::Success) {
 		Log::err ("Failed to acquire application network resources; err=%i", result);
 		return (result);
 	}
@@ -336,15 +336,15 @@ int App::runWindow () {
 
 	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
 		Log::err ("Failed to start SDL: %s", SDL_GetError ());
-		return (OsUtil::Result::SdlOperationFailedError);
+		return (OsUtil::SdlOperationFailedError);
 	}
 	if (IMG_Init (IMG_INIT_JPG | IMG_INIT_PNG) != (IMG_INIT_JPG | IMG_INIT_PNG)) {
 		Log::err ("Failed to start SDL_image: %s", IMG_GetError ());
-		return (OsUtil::Result::SdlOperationFailedError);
+		return (OsUtil::SdlOperationFailedError);
 	}
 
 	result = input.start ();
-	if (result != OsUtil::Result::Success) {
+	if (result != OsUtil::Success) {
 		Log::err ("Failed to acquire application input devices; err=%i", result);
 		return (result);
 	}
@@ -377,15 +377,16 @@ int App::runWindow () {
 		}
 	}
 
-	result = SDL_CreateWindowAndRenderer (windowWidth, windowHeight, 0, &window, &render);
+	windowflags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS;
+	result = SDL_CreateWindowAndRenderer (windowWidth, windowHeight, windowflags, &window, &render);
 	if (result != 0) {
 		Log::err ("Failed to create application window: %s", SDL_GetError ());
-		return (OsUtil::Result::SdlOperationFailedError);
+		return (OsUtil::SdlOperationFailedError);
 	}
 	result = SDL_GetRendererInfo (render, &renderinfo);
 	if (result != 0) {
 		Log::err ("Failed to create application renderer: %s", SDL_GetError ());
-		return (OsUtil::Result::SdlOperationFailedError);
+		return (OsUtil::SdlOperationFailedError);
 	}
 	if ((renderinfo.flags & (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE)) == (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE)) {
 		isTextureRenderEnabled = true;
@@ -410,7 +411,7 @@ int App::runWindow () {
 	SDL_SetWindowTitle (window, APPLICATION_NAME);
 	uiConfig.resetScale ();
 	result = uiConfig.load (fontScale);
-	if (result != OsUtil::Result::Success) {
+	if (result != OsUtil::Success) {
 		Log::err ("Failed to load application resources; err=%i", result);
 		return (result);
 	}
@@ -521,7 +522,7 @@ int App::runWindow () {
 		t1 = OsUtil::getTime ();
 		input.pollEvents ();
 		if (! FLOAT_EQUALS (fontScale, nextFontScale)) {
-			if (uiConfig.reloadFonts (nextFontScale) != OsUtil::Result::Success) {
+			if (uiConfig.reloadFonts (nextFontScale) != OsUtil::Success) {
 				nextFontScale = fontScale;
 			}
 			else {
@@ -580,7 +581,7 @@ int App::runWindow () {
 	}
 	Log::info ("Application ended; updateCount=%lli drawCount=%lli runtime=%.3fs FPS=%f pid=%i", (long long) updateCount, (long long) drawCount, ((double) elapsed) / 1000.0f, fps, OsUtil::getProcessId ());
 
-	return (OsUtil::Result::Success);
+	return (OsUtil::Success);
 }
 
 int App::runConsole () {
@@ -590,7 +591,7 @@ int App::runConsole () {
 
 	if (SDL_Init (SDL_INIT_TIMER) != 0) {
 		Log::printf ("Failed to start SDL: %s", SDL_GetError ());
-		return (OsUtil::Result::SdlOperationFailedError);
+		return (OsUtil::SdlOperationFailedError);
 	}
 	Log::printf ("%s; buildId=%s lang=%s pid=%i", UiText::instance->getText (UiTextString::ConsoleStartText1).c_str (), BUILD_ID, OsUtil::getEnvLanguage ("").c_str (), OsUtil::getProcessId ());
 	Log::printf ("* %s / v%s.%s.%s. %s", UiText::instance->getText (UiTextString::ConsoleStartText2).c_str (), LUA_VERSION_MAJOR, LUA_VERSION_MINOR, LUA_VERSION_RELEASE, UiText::instance->getText (UiTextString::ConsoleStartText3).c_str ());
@@ -633,7 +634,7 @@ int App::runConsole () {
 	endtime = OsUtil::getTime ();
 	elapsed = endtime - startTime;
 	Log::info ("Application ended; runtime=%.3fs pid=%i", ((double) elapsed) / 1000.0f, OsUtil::getProcessId ());
-	return (OsUtil::Result::Success);
+	return (OsUtil::Success);
 }
 
 void App::populateWidgets () {
@@ -747,8 +748,6 @@ SDL_Texture *App::getRoundedCornerTexture (int radius, int *textureWidth, int *t
 }
 
 void App::shutdown () {
-	Ui *ui;
-
 	if (isConsole) {
 		isShutdown = true;
 		::close (0);
@@ -759,11 +758,6 @@ void App::shutdown () {
 		return;
 	}
 	isShuttingDown = true;
-	ui = uiStack.getActiveUi ();
-	if (ui) {
-		ui->showShutdownWindow ();
-		ui->release ();
-	}
 	taskGroup.stop ();
 	network.stop ();
 	input.stop ();
@@ -1021,7 +1015,7 @@ void App::writePrefs () {
 	SDL_LockMutex (prefsMapMutex);
 	if (prefsMap.isWriteDirty) {
 		result = prefsMap.write (prefsPath);
-		if (result != OsUtil::Result::Success) {
+		if (result != OsUtil::Success) {
 			Log::err ("Failed to write prefs file; prefsPath=\"%s\" err=%i", prefsPath.c_str (), result);
 			isPrefsWriteDisabled = true;
 		}
@@ -1055,7 +1049,7 @@ void App::resizeWindow () {
 
 	uiConfig.coreSprites.resize ();
 	result = uiConfig.reloadFonts (fontScale);
-	if (result != OsUtil::Result::Success) {
+	if (result != OsUtil::Success) {
 		Log::err ("Failed to reload fonts; fontScale=%.2f err=%i", fontScale, result);
 	}
 

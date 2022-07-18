@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -98,29 +98,28 @@ void Ui::release () {
 	}
 }
 
-int Ui::load () {
+OsUtil::Result Ui::load () {
 	StdString path;
-	int result;
+	OsUtil::Result result;
 
 	if (isLoaded) {
-		return (OsUtil::Result::Success);
+		return (OsUtil::Success);
 	}
 	path = getSpritePath ();
 	if (! path.empty ()) {
 		result = sprites.load (path);
-		if (result != OsUtil::Result::Success) {
+		if (result != OsUtil::Success) {
 			Log::err ("Failed to load sprite resources");
 			return (result);
 		}
 	}
 
 	result = doLoad ();
-	if (result != OsUtil::Result::Success) {
+	if (result != OsUtil::Success) {
 		return (result);
 	}
-
 	isLoaded = true;
-	return (OsUtil::Result::Success);
+	return (OsUtil::Success);
 }
 
 void Ui::unload () {
@@ -141,41 +140,13 @@ StdString Ui::getSpritePath () {
 	return (StdString (""));
 }
 
-int Ui::doLoad () {
+OsUtil::Result Ui::doLoad () {
 	// Default implementation does nothing
-	return (OsUtil::Result::Success);
+	return (OsUtil::Success);
 }
 
 void Ui::doUnload () {
 	// Default implementation does nothing
-}
-
-void Ui::showShutdownWindow () {
-	LabelWindow *label;
-	ProgressBar *bar;
-	Panel *panel;
-
-	clearPopupWidgets ();
-
-	panel = new Panel ();
-	panel->setFillBg (true, Color (0.0f, 0.0f, 0.0f, 0.0f));
-	panel->bgColor.translate (0.0f, 0.0f, 0.0f, UiConfiguration::instance->overlayWindowAlpha, UiConfiguration::instance->backgroundCrossFadeDuration);
-	panel->setFixedSize (true, App::instance->rootPanel->width, App::instance->rootPanel->height);
-
-	label = new LabelWindow (new Label (StdString::createSprintf ("%s %s", UiText::instance->getText (UiTextString::ShuttingDown).capitalized ().c_str (), APPLICATION_NAME), UiConfiguration::CaptionFont, UiConfiguration::instance->primaryTextColor));
-	label->setFillBg (true, UiConfiguration::instance->lightBackgroundColor);
-
-	bar = new ProgressBar (label->width, UiConfiguration::instance->progressBarHeight);
-	bar->setIndeterminate (true);
-
-	App::instance->rootPanel->addWidget (panel);
-	App::instance->rootPanel->addWidget (label);
-	App::instance->rootPanel->addWidget (bar);
-	panel->zLevel = App::instance->rootPanel->maxWidgetZLevel + 1;
-	label->zLevel = App::instance->rootPanel->maxWidgetZLevel + 2;
-	bar->zLevel = App::instance->rootPanel->maxWidgetZLevel + 2;
-	label->position.assign ((App::instance->rootPanel->width / 2.0f) - (label->width / 2.0f), (App::instance->rootPanel->height / 2.0f) - (label->height / 2.0f));
-	bar->position.assign (label->position.x, label->position.y + label->height);
 }
 
 bool Ui::keyEvent (void *uiPtr, SDL_Keycode keycode, bool isShiftDown, bool isControlDown) {
@@ -295,4 +266,14 @@ void Ui::clearPopupWidgets () {
 
 Widget *Ui::addWidget (Widget *widget, float positionX, float positionY, int zLevel) {
 	return (rootPanel->addWidget (widget, positionX, positionY, zLevel));
+}
+
+bool Ui::openWidget (const StdString &targetName) {
+	// Default implementation does nothing
+	return (false);
+}
+
+bool Ui::inputCommand (Json *cmdInv) {
+	// Default implementation does nothing
+	return (false);
 }

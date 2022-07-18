@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -94,12 +94,12 @@ OsUtil::Result Font::load (Buffer *fontData, int pointSize) {
 	result = FT_New_Memory_Face (freetype, (FT_Byte *) fontData->data, fontData->length, 0, &face);
 	if (result != 0) {
 		Log::err ("Failed to load font; name=\"%s\" err=\"FT_New_Memory_Face: %i\"", name.c_str (), result);
-		return (OsUtil::Result::FreetypeOperationFailedError);
+		return (OsUtil::FreetypeOperationFailedError);
 	}
 	result = FT_Set_Char_Size (face, pointSize << 6, 0, 100, 0);
 	if (result != 0) {
 		Log::err ("Failed to load font; name=\"%s\" err=\"FT_Set_Char_Size: %i\"", name.c_str (), result);
-		return (OsUtil::Result::FreetypeOperationFailedError);
+		return (OsUtil::FreetypeOperationFailedError);
 	}
 
 	maxw = 0;
@@ -220,7 +220,7 @@ OsUtil::Result Font::load (Buffer *fontData, int pointSize) {
 	}
 
 	isLoaded = true;
-	return (OsUtil::Result::Success);
+	return (OsUtil::Success);
 }
 
 Font::Glyph *Font::getGlyph (char glyphCharacter) {

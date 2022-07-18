@@ -1,5 +1,5 @@
 /*
-* Copyright 2018-2021 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
+* Copyright 2018-2022 Membrane Software <author@membranesoftware.com> https://membranesoftware.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -27,7 +27,7 @@
 * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
 */
-// Class that holds a lua_State object and executes scripts
+// Class that holds a lua_State object and executes Lua scripts
 
 #ifndef LUA_SCRIPT_H
 #define LUA_SCRIPT_H
@@ -42,6 +42,11 @@ class LuaScript {
 public:
 	LuaScript (const StdString &script = StdString (""));
 	~LuaScript ();
+
+	static const int scriptWait;
+
+	// Read-write data members
+	static int scriptTimeout;
 
 	// Read-only data members
 	StdString script;
@@ -59,6 +64,9 @@ public:
 	static int dofile (lua_State *L);
 	static int quit (lua_State *L);
 	static int sleep (lua_State *L);
+	static int timeout (lua_State *L);
+	static int open (lua_State *L);
+	static int proc (lua_State *L);
 
 	struct Function {
 		const lua_CFunction fn;
@@ -70,6 +78,10 @@ public:
 	static void argvInteger (lua_State *L, int position, int *value);
 	static void argvString (lua_State *L, int position, char **value);
 	static void argvBoolean (lua_State *L, int position, bool *value);
+
+	typedef bool (*AwaitResultFn) (void *data);
+	// Execute fn repeatedly until it returns true or the scriptTimeout period has elapsed, then return the last obtained result
+	static bool awaitResult (LuaScript::AwaitResultFn fn, void *fnData);
 
 	// sort predicate function
 	static bool compareFunctions (const Function &a, const Function &b);
